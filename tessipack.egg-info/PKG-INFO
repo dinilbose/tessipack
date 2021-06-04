@@ -1,0 +1,18 @@
+Metadata-Version: 2.1
+Name: tessipack
+Version: 0.0.1
+Summary: Interactive package for analysing TESS FFI
+Home-page: https://github.com/dinilbose/tessipack
+Author: Dinil Bose P
+Author-email: dinilbose@gmail.com
+License: gpl-3.0
+Download-URL: https://github.com/dinilbose/ismrpy/archive/0.2.9.tar.gz
+Description: # tessipack
+Keywords: FFI,TESS
+Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Science/Research
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
+Classifier: Programming Language :: Python :: 3.6
+Description-Content-Type: text/markdown

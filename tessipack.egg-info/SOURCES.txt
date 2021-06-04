@@ -1,0 +1,8 @@
+README.md
+setup.py
+tessipack/__init__.py
+tessipack.egg-info/PKG-INFO
+tessipack.egg-info/SOURCES.txt
+tessipack.egg-info/dependency_links.txt
+tessipack.egg-info/requires.txt
+tessipack.egg-info/top_level.txt
