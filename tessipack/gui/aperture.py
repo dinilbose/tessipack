@@ -670,7 +670,7 @@ class Aperture(Environment):
     def text_format(self):
         '''Format text for display'''
         data=mycatalog.pointer(catalog='mycatalog',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
-        apogee=mycatalog.pointer(catalog='apogee',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
+        # apogee=mycatalog.pointer(catalog='apogee',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
 
         Gmag=str(data['Gmag'].values[0])
         bp_rp=str(data['bp_rp'].values[0])
