@@ -14,7 +14,7 @@ PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 
 #package_path='/home/dinilbose/PycharmProjects/light_cluster/'
 package_path='/home/dinilbose/mypackage/tessipack/tessipack/'
-package_path=PACKAGEDIR
+package_path=PACKAGEDIR+'/'
 
 #Data_path='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/'
 Data_path=os.path.expanduser('~/data_tessipack/data/')
