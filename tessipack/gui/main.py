@@ -9,7 +9,7 @@ from bokeh.models import Button  # for saving data
 #import catalog
 #import env
 #import aperture
-from importlib import reload
+#from importlib import reload
 from bokeh.models.widgets import Tabs
 from bokeh.layouts import layout, Spacer
 
