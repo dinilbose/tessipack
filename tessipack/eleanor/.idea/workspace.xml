@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="94e02f33-a4cc-430d-96d3-07dfd5477d8b" name="Default Changelist" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Python Script" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectId" id="1Y4KTn2YPlZwtbOYudk5AIdgXBV" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings>
+        <option name="useSoftWraps" value="true" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/" />
+    </key>
+  </component>
+  <component name="ServiceViewManager">
+    <option name="viewStates">
+      <list>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="94e02f33-a4cc-430d-96d3-07dfd5477d8b" name="Default Changelist" comment="" />
+      <created>1582196436292</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1582196436292</updated>
+      <workItem from="1582196438126" duration="20515000" />
+      <workItem from="1582797129901" duration="1873000" />
+      <workItem from="1583240748929" duration="6000" />
+      <workItem from="1583332355617" duration="37000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="1909" y="291" width="826" height="525" key="IDE.errors.dialog" timestamp="1582277697441">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="1909" y="291" width="826" height="525" key="IDE.errors.dialog/1366.0.1920.1080/0.28.1366.740@1366.0.1920.1080" timestamp="1582277697441" />
+    <state x="1815" y="189" key="SettingsEditor" timestamp="1582277567373">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="1815" y="189" key="SettingsEditor/1366.0.1920.1080/0.28.1366.740@1366.0.1920.1080" timestamp="1582277567373" />
+    <state x="2462" y="381" key="com.intellij.ide.util.TipDialog" timestamp="1583332367948">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="2462" y="381" key="com.intellij.ide.util.TipDialog/1366.0.1920.1080/0.28.1366.740@1366.0.1920.1080" timestamp="1583332367948" />
+    <state x="1979" y="172" width="685" height="763" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser" timestamp="1582213860773">
+      <screen x="1366" y="0" width="1920" height="1080" />
+    </state>
+    <state x="1979" y="172" width="685" height="763" key="com.intellij.openapi.editor.actions.MultiplePasteAction$ClipboardContentChooser/1366.0.1920.1080/0.28.1366.740@1366.0.1920.1080" timestamp="1582213860773" />
+  </component>
+</project>

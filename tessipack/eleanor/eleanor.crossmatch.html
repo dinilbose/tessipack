@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module eleanor.crossmatch</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="eleanor.html"><font color="#ffffff">eleanor</font></a>.crossmatch</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dinilbose/github/eleanor/eleanor/crossmatch.py">/home/dinilbose/github/eleanor/eleanor/crossmatch.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="astropy.io.fits.html">astropy.io.fits</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="pandas.html">pandas</a><br>
+</td><td width="25%" valign=top><a href="socket.html">socket</a><br>
+<a href="urllib.html">urllib</a><br>
+</td><td width="25%" valign=top></td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="eleanor.crossmatch.html#Crossmatch">Crossmatch</a>
+</font></dt></dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Crossmatch">class <strong>Crossmatch</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>This&nbsp;class&nbsp;can&nbsp;be&nbsp;used&nbsp;to&nbsp;find&nbsp;the&nbsp;same&nbsp;light&nbsp;curve&nbsp;from&nbsp;different<br>
+pipelines.&nbsp;The&nbsp;current&nbsp;available&nbsp;light&nbsp;curves&nbsp;are&nbsp;from&nbsp;the&nbsp;<br>
+TESS&nbsp;Asteroseismic&nbsp;Science&nbsp;Consortium&nbsp;(TASC)&nbsp;and&nbsp;Oelkers&nbsp;&amp;&nbsp;Stassun&nbsp;(2019).<br>
+Oelkers&nbsp;&amp;&nbsp;Stassun&nbsp;light&nbsp;curves&nbsp;are&nbsp;only&nbsp;available&nbsp;through&nbsp;Sector&nbsp;5.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+obj&nbsp;:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Object&nbsp;must&nbsp;be&nbsp;an&nbsp;eleanor.TargetData&nbsp;<a href="builtins.html#object">object</a>.<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Crossmatch-__init__"><strong>__init__</strong></a>(self, object)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<dl><dt><a name="Crossmatch-oelkers_lc"><strong>oelkers_lc</strong></a>(self)</dt><dd><tt>Grabs&nbsp;the&nbsp;Oelkers&nbsp;&amp;&nbsp;Stassun&nbsp;(2019)&nbsp;associated&nbsp;light&nbsp;curve.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;<br>
+Attributes<br>
+----------<br>
+time&nbsp;:&nbsp;np.array<br>
+mag&nbsp;&nbsp;:&nbsp;np.array<br>
+mag_err&nbsp;:&nbsp;np.array</tt></dd></dl>
+
+<dl><dt><a name="Crossmatch-tasoc_lc"><strong>tasoc_lc</strong></a>(self)</dt><dd><tt>Grabs&nbsp;the&nbsp;T'DA&nbsp;available&nbsp;light&nbsp;curves&nbsp;for&nbsp;your&nbsp;target.<br>
+For&nbsp;more&nbsp;information,&nbsp;see&nbsp;the&nbsp;TASOC&nbsp;light&nbsp;curve&nbsp;documentation:&nbsp;https://tasoc.dk/code/.<br>
+&nbsp;<br>
+Parameters<br>
+----------<br>
+&nbsp;<br>
+Attributes<br>
+----------<br>
+tasoc_header&nbsp;:&nbsp;<br>
+tasoc_tpf&nbsp;:&nbsp;np.2darray<br>
+tasoc_aperture&nbsp;:&nbsp;np.2darray<br>
+tasoc_time&nbsp;:&nbsp;np.array<br>
+tasoc_quality&nbsp;:&nbsp;np.array<br>
+tasoc_timecorr&nbsp;:&nbsp;np.array<br>
+tasoc_cadenceno&nbsp;:&nbsp;np.array<br>
+tasoc_flux_raw&nbsp;:&nbsp;np.array<br>
+tasoc_flux_raw_err&nbsp;:&nbsp;np.array<br>
+tasoc_flux_corr&nbsp;:&nbsp;np.array<br>
+tasoc_flux_corr_err&nbsp;:&nbsp;np.array<br>
+tasoc_flux_bkg&nbsp;:&nbsp;np.array<br>
+tasoc_pixel_quality&nbsp;:&nbsp;np.array<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Quality&nbsp;flags&nbsp;for&nbsp;the&nbsp;data;&nbsp;use&nbsp;these&nbsp;not&nbsp;`tasoc_quality`.<br>
+tasoc_pos_corr1&nbsp;:&nbsp;np.array<br>
+tasoc_pos_corr2&nbsp;:&nbsp;np.array<br>
+tasoc_mom_centr1&nbsp;:&nbsp;np.array<br>
+tasoc_mom_centr2&nbsp;:&nbsp;np.array</tt></dd></dl>
+
+<dl><dt><a name="Crossmatch-two_minute"><strong>two_minute</strong></a>(self, download=False, sectors=None)</dt><dd><tt>Checks&nbsp;to&nbsp;see&nbsp;if&nbsp;short&nbsp;cadence&nbsp;data&nbsp;is&nbsp;available&nbsp;for&nbsp;your&nbsp;target.<br>
+&nbsp;<br>
+Parameters<br>
+----------&nbsp;<br>
+download&nbsp;:&nbsp;str,&nbsp;optional<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Allows&nbsp;the&nbsp;user&nbsp;to&nbsp;download&nbsp;the&nbsp;short&nbsp;cadence&nbsp;target&nbsp;pixel&nbsp;files.<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;By&nbsp;default,&nbsp;downloads&nbsp;all&nbsp;sectors&nbsp;that&nbsp;are&nbsp;available.<br>
+Returns<br>
+----------&nbsp;<br>
+sc&nbsp;:&nbsp;np.ndarray<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;download&nbsp;==&nbsp;True&nbsp;:&nbsp;Returns&nbsp;a&nbsp;list&nbsp;of&nbsp;lightkurve.lightcurve.TessLightCurve&nbsp;<a href="builtins.html#object">object</a>(s).<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;If&nbsp;download&nbsp;==&nbsp;False&nbsp;:&nbsp;Returns&nbsp;a&nbsp;lightkurve.search.SearchResult&nbsp;<a href="builtins.html#object">object</a>.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>__all__</strong> = ['Crossmatch']</td></tr></table>
+</body></html>

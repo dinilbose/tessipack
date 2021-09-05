@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module eleanor.models</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong><a href="eleanor.html"><font color="#ffffff">eleanor</font></a>.models</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dinilbose/github/eleanor/eleanor/models.py">/home/dinilbose/github/eleanor/eleanor/models.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="math.html">math</a><br>
+</td><td width="25%" valign=top><a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="astropy.io.fits.html">astropy.io.fits</a><br>
+</td><td width="25%" valign=top><a href="tensorflow.html">tensorflow</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ee77aa">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Classes</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#ee77aa"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl>
+<dt><font face="helvetica, arial"><a href="builtins.html#object">builtins.object</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="eleanor.models.html#Model">Model</a>
+</font></dt><dd>
+<dl>
+<dt><font face="helvetica, arial"><a href="eleanor.models.html#Gaussian">Gaussian</a>
+</font></dt><dt><font face="helvetica, arial"><a href="eleanor.models.html#Moffat">Moffat</a>
+</font></dt></dl>
+</dd>
+</dl>
+</dd>
+</dl>
+ <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Gaussian">class <strong>Gaussian</strong></a>(<a href="eleanor.models.html#Model">Model</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Pretty&nbsp;dumb&nbsp;<a href="#Gaussian">Gaussian</a>&nbsp;model.<br>
+Attributes<br>
+----------<br>
+shape&nbsp;:&nbsp;tuple<br>
+&nbsp;&nbsp;&nbsp;&nbsp;shape&nbsp;of&nbsp;the&nbsp;TPF.&nbsp;(row_shape,&nbsp;col_shape)<br>
+col_ref,&nbsp;row_ref&nbsp;:&nbsp;int,&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;column&nbsp;and&nbsp;row&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;bottom<br>
+&nbsp;&nbsp;&nbsp;&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;TPF<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="eleanor.models.html#Gaussian">Gaussian</a></dd>
+<dd><a href="eleanor.models.html#Model">Model</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Gaussian-__call__"><strong>__call__</strong></a>(self, *params)</dt><dd><tt>Call&nbsp;self&nbsp;as&nbsp;a&nbsp;function.</tt></dd></dl>
+
+<dl><dt><a name="Gaussian-evaluate"><strong>evaluate</strong></a>(self, flux, xo, yo, a, b, c)</dt><dd><tt>Evaluate&nbsp;the&nbsp;<a href="#Gaussian">Gaussian</a>&nbsp;model<br>
+Parameters<br>
+----------<br>
+flux&nbsp;:&nbsp;tf.Variable<br>
+xo,&nbsp;yo&nbsp;:&nbsp;tf.Variable,&nbsp;tf.Variable<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Center&nbsp;coordiantes&nbsp;of&nbsp;the&nbsp;<a href="#Gaussian">Gaussian</a>.<br>
+a,&nbsp;b,&nbsp;c&nbsp;:&nbsp;tf.Variable,&nbsp;tf.Variable<br>
+&nbsp;&nbsp;&nbsp;&nbsp;Parameters&nbsp;that&nbsp;control&nbsp;the&nbsp;rotation&nbsp;angle<br>
+&nbsp;&nbsp;&nbsp;&nbsp;and&nbsp;the&nbsp;stretch&nbsp;along&nbsp;the&nbsp;major&nbsp;axis&nbsp;of&nbsp;the&nbsp;<a href="#Gaussian">Gaussian</a>,<br>
+&nbsp;&nbsp;&nbsp;&nbsp;such&nbsp;that&nbsp;the&nbsp;matrix&nbsp;M&nbsp;=&nbsp;[a&nbsp;b&nbsp;;&nbsp;b&nbsp;c]&nbsp;is&nbsp;positive-definite.<br>
+References<br>
+----------<br>
+https://en.wikipedia.org/wiki/Gaussian_function#Two-dimensional_Gaussian_function</tt></dd></dl>
+
+<hr>
+Methods inherited from <a href="eleanor.models.html#Model">Model</a>:<br>
+<dl><dt><a name="Gaussian-__init__"><strong>__init__</strong></a>(self, shape, col_ref, row_ref)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="eleanor.models.html#Model">Model</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Model">class <strong>Model</strong></a>(<a href="builtins.html#object">builtins.object</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Pretty&nbsp;dumb&nbsp;<a href="#Gaussian">Gaussian</a>&nbsp;model.<br>
+Attributes<br>
+----------<br>
+shape&nbsp;:&nbsp;tuple<br>
+&nbsp;&nbsp;&nbsp;&nbsp;shape&nbsp;of&nbsp;the&nbsp;TPF.&nbsp;(row_shape,&nbsp;col_shape)<br>
+col_ref,&nbsp;row_ref&nbsp;:&nbsp;int,&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;column&nbsp;and&nbsp;row&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;bottom<br>
+&nbsp;&nbsp;&nbsp;&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;TPF<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%">Methods defined here:<br>
+<dl><dt><a name="Model-__init__"><strong>__init__</strong></a>(self, shape, col_ref, row_ref)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<hr>
+Data descriptors defined here:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table> <p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#ffc8d8">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#000000" face="helvetica, arial"><a name="Moffat">class <strong>Moffat</strong></a>(<a href="eleanor.models.html#Model">Model</a>)</font></td></tr>
+    
+<tr bgcolor="#ffc8d8"><td rowspan=2><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+<td colspan=2><tt>Pretty&nbsp;dumb&nbsp;<a href="#Gaussian">Gaussian</a>&nbsp;model.<br>
+Attributes<br>
+----------<br>
+shape&nbsp;:&nbsp;tuple<br>
+&nbsp;&nbsp;&nbsp;&nbsp;shape&nbsp;of&nbsp;the&nbsp;TPF.&nbsp;(row_shape,&nbsp;col_shape)<br>
+col_ref,&nbsp;row_ref&nbsp;:&nbsp;int,&nbsp;int<br>
+&nbsp;&nbsp;&nbsp;&nbsp;column&nbsp;and&nbsp;row&nbsp;coordinates&nbsp;of&nbsp;the&nbsp;bottom<br>
+&nbsp;&nbsp;&nbsp;&nbsp;left&nbsp;corner&nbsp;of&nbsp;the&nbsp;TPF<br>&nbsp;</tt></td></tr>
+<tr><td>&nbsp;</td>
+<td width="100%"><dl><dt>Method resolution order:</dt>
+<dd><a href="eleanor.models.html#Moffat">Moffat</a></dd>
+<dd><a href="eleanor.models.html#Model">Model</a></dd>
+<dd><a href="builtins.html#object">builtins.object</a></dd>
+</dl>
+<hr>
+Methods defined here:<br>
+<dl><dt><a name="Moffat-__call__"><strong>__call__</strong></a>(self, *params)</dt><dd><tt>Call&nbsp;self&nbsp;as&nbsp;a&nbsp;function.</tt></dd></dl>
+
+<dl><dt><a name="Moffat-evaluate"><strong>evaluate</strong></a>(self, flux, xo, yo, a, b, c, beta)</dt></dl>
+
+<hr>
+Methods inherited from <a href="eleanor.models.html#Model">Model</a>:<br>
+<dl><dt><a name="Moffat-__init__"><strong>__init__</strong></a>(self, shape, col_ref, row_ref)</dt><dd><tt>Initialize&nbsp;self.&nbsp;&nbsp;See&nbsp;help(type(self))&nbsp;for&nbsp;accurate&nbsp;signature.</tt></dd></dl>
+
+<hr>
+Data descriptors inherited from <a href="eleanor.models.html#Model">Model</a>:<br>
+<dl><dt><strong>__dict__</strong></dt>
+<dd><tt>dictionary&nbsp;for&nbsp;instance&nbsp;variables&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+<dl><dt><strong>__weakref__</strong></dt>
+<dd><tt>list&nbsp;of&nbsp;weak&nbsp;references&nbsp;to&nbsp;the&nbsp;object&nbsp;(if&nbsp;defined)</tt></dd>
+</dl>
+</td></tr></table></td></tr></table>
+</body></html>

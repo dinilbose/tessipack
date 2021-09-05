@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Python: module utils</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+</head><body bgcolor="#f0f0f8">
+
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="heading">
+<tr bgcolor="#7799ee">
+<td valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial">&nbsp;<br><big><big><strong>utils</strong></big></big></font></td
+><td align=right valign=bottom
+><font color="#ffffff" face="helvetica, arial"><a href=".">index</a><br><a href="file:/home/dinilbose/github/eleanor/utils.py">/home/dinilbose/github/eleanor/utils.py</a></font></td></tr></table>
+    <p></p>
+<p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#aa55cc">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Modules</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#aa55cc"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><table width="100%" summary="list"><tr><td width="25%" valign=top><a href="astropy.io.fits.html">astropy.io.fits</a><br>
+<a href="numpy.html">numpy</a><br>
+</td><td width="25%" valign=top><a href="os.html">os</a><br>
+<a href="requests.html">requests</a><br>
+</td><td width="25%" valign=top><a href="sys.html">sys</a><br>
+<a href="astropy.units.html">astropy.units</a><br>
+</td><td width="25%" valign=top><a href="urllib.parse.html">urllib.parse</a><br>
+</td></tr></table></td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#eeaa77">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Functions</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#eeaa77"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><dl><dt><a name="-convolve_cbvs"><strong>convolve_cbvs</strong></a>(sectors=array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13]))</dt><dd><tt>Bins&nbsp;the&nbsp;co-trending&nbsp;basis&nbsp;vectors&nbsp;into&nbsp;FFI&nbsp;times;<br>
+Calls&nbsp;download_cbvs&nbsp;to&nbsp;get&nbsp;filenames<br>
+Input<br>
+-----<br>
+&nbsp;&nbsp;&nbsp;type(sectors)&nbsp;==&nbsp;list</tt></dd></dl>
+ <dl><dt><a name="-create_ffiindex"><strong>create_ffiindex</strong></a>(sectors=array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13]))</dt><dd><tt>Creates&nbsp;FFIINDEX&nbsp;for&nbsp;a&nbsp;given&nbsp;sector<br>
+Input<br>
+-----<br>
+&nbsp;&nbsp;&nbsp;type(sectors)&nbsp;==&nbsp;list</tt></dd></dl>
+ <dl><dt><a name="-download_cbvs"><strong>download_cbvs</strong></a>(sector)</dt><dd><tt>Downloads&nbsp;the&nbsp;co-trending&nbsp;basis&nbsp;vectors&nbsp;for&nbsp;a&nbsp;given&nbsp;list&nbsp;of&nbsp;sectors<br>
+Input<br>
+-----<br>
+&nbsp;&nbsp;&nbsp;type(sectors)&nbsp;==&nbsp;int</tt></dd></dl>
+ <dl><dt><a name="-listFD"><strong>listFD</strong></a>(url, ext='')</dt><dd><tt>Finds&nbsp;the&nbsp;co-trending&nbsp;basis&nbsp;vector&nbsp;files&nbsp;in&nbsp;the&nbsp;directory&nbsp;structure&nbsp;at&nbsp;STScI<br>
+Input<br>
+-----<br>
+&nbsp;&nbsp;&nbsp;type(url)&nbsp;==&nbsp;str</tt></dd></dl>
+ <dl><dt><a name="-set_quality_flags"><strong>set_quality_flags</strong></a>(sector=array([ 1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13]))</dt><dd><tt>Uses&nbsp;the&nbsp;quality&nbsp;flags&nbsp;in&nbsp;a&nbsp;2-minute&nbsp;target&nbsp;to&nbsp;create&nbsp;quality&nbsp;flags<br>
+&nbsp;&nbsp;&nbsp;&nbsp;in&nbsp;the&nbsp;postcards.<br>
+We&nbsp;create&nbsp;our&nbsp;own&nbsp;quality&nbsp;flag&nbsp;as&nbsp;well,&nbsp;using&nbsp;our&nbsp;pointing&nbsp;model.</tt></dd></dl>
+</td></tr></table><p>
+<table width="100%" cellspacing=0 cellpadding=2 border=0 summary="section">
+<tr bgcolor="#55aa55">
+<td colspan=3 valign=bottom>&nbsp;<br>
+<font color="#ffffff" face="helvetica, arial"><big><strong>Data</strong></big></font></td></tr>
+    
+<tr><td bgcolor="#55aa55"><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td><td>&nbsp;</td>
+<td width="100%"><strong>Tesscut</strong> = &lt;astroquery.mast.tesscut.TesscutClass object&gt;<br>
+<strong>__warningregistry__</strong> = {'version': 1018, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-1-1-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-1-2-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-1-3-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-1-4-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-2-1-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-2-2-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-2-3-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-2-4-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ("unclosed file &lt;_io.FileIO name='tess2019112060037-s0011-3-1-0143-s_cbv.fits' mode='rb' closefd=True&gt;", &lt;class 'ResourceWarning'&gt;, 78): True, ...}</td></tr></table>
+</body></html>
