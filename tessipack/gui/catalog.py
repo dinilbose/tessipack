@@ -23,6 +23,8 @@ class Catalog(Environment):
     env=Environment
     def __init__(self):
         self.catalog_all=mycatalog.pointer(catalog='mycatalog')
+        self.env.extra_flag_file=mycatalog.filename(name='extra_flag_file')
+
         all_clusters=self.catalog_all.cluster.unique().tolist()
         # catalog_all=catalog_all.query('flag_source==1 & flag_duplicate==0').reset_index()
         # catalog_all=catalog_all.sort_values(by=['Gmag']).reset_index()
