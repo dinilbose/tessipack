@@ -671,7 +671,7 @@ class Aperture(Environment):
         '''Format text for display'''
         data=mycatalog.pointer(catalog='mycatalog',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
         # apogee=mycatalog.pointer(catalog='apogee',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
-
+        apogee=pd.DataFrame()
         Gmag=str(data['Gmag'].values[0])
         bp_rp=str(data['bp_rp'].values[0])
         PMemb=str(data['PMemb'].values[0])
