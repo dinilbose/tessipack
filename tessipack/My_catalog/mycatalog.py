@@ -9,8 +9,13 @@ from pathlib import Path
 import os
 import ast
 
+import os
+PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
+
 #package_path='/home/dinilbose/PycharmProjects/light_cluster/'
 package_path='/home/dinilbose/mypackage/tessipack/tessipack/'
+package_path=PACKAGEDIR
+
 #Data_path='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/'
 Data_path=os.path.expanduser('~/data_tessipack/data/')
 catalog_version='01'
@@ -322,7 +327,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
         #setting up custom star
 
         id_mycatalog='custom_star'
-        
+
         mywcs=utils.extract_essential_wcs_postcard(data_post)
         radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
         for k in range(len(radec)):
