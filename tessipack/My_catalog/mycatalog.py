@@ -14,7 +14,7 @@ PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 
 #package_path='/home/dinilbose/PycharmProjects/light_cluster/'
 package_path='/home/dinilbose/mypackage/tessipack/tessipack/'
-package_path=PACKAGEDIR+'/'
+package_path=str(Path(PACKAGEDIR).parents[0])
 
 #Data_path='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/'
 Data_path=os.path.expanduser('~/data_tessipack/data/')
@@ -32,7 +32,7 @@ def pointer(catalog='mycatalog',pmemb=0,cluster='',id_mycatalog='',id_gaia='',in
         mycatalog=mycatalog.query('cluster==@cluster')
 
     if real==True:
-        whole=pd.read_csv(package_path+'My_catalog/Source/Collinder_69_aperture_pixel.csv')
+        whole=pd.read_csv(package_path+'/My_catalog/Source/Collinder_69_aperture_pixel.csv')
         Real_source=whole.drop_duplicates(subset=['pixel_x','pixel_y'],keep='first').id_gaia.unique().tolist()
         mycatalog=mycatalog.query('id_gaia==@Real_source')
 
