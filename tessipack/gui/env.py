@@ -43,7 +43,9 @@ class Environment(object):
 
     aperture_setting=1 #1 current and -1 default
 
-    extra_flag_file='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/extra_flag.flag'
+    # extra_flag_file='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/extra_flag.flag'
+    extra_flag_file='extra_flag.flag'
+
     current_flux_dataframe=None
     #----------------------------Source Table--------------------------------- #
 

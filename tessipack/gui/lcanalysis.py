@@ -113,6 +113,7 @@ class Lcanalysis(Environment):
 
         self.env.check_analysis = CheckboxGroup(labels=['Analysis window'],active=[0,1],height=20,width=60)
         self.env.check_analysis.on_change("active",self.update)
+        self.env.extra_flag_file=mycatalog.filename(name='extra_flag_file')
 
     def update(self,attr, old, new):
         '''

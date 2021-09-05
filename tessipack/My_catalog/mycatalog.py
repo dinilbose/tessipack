@@ -165,6 +165,12 @@ def filename(name='',id_gaia='',id_mycatalog='',cluster='Collinder_69',sector=''
         #id=my_catalog.id_gaia.item()
         filename=Data_path+name+'/'+cluster+'.csv'
         full_path=Path(filename)
+
+    if name=='extra_flag_file':
+        #id=my_catalog.id_gaia.item()
+        filename=Data_path+'extra_flag.flag'
+        full_path=Path(filename)
+
     if name=='cluster_ffi':
         import glob
         filename=Data_path+name+'/'+cluster+'/'+'*.fits'
