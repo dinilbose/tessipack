@@ -4,7 +4,7 @@ import sys
 # print(sys.path)
 from ..functions import utils
 from ..functions import aperture
-
+from .. import config
 from pathlib import Path
 import os
 import ast
@@ -13,18 +13,18 @@ import os
 PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 
 #package_path='/home/dinilbose/PycharmProjects/light_cluster/'
-package_path='/home/dinilbose/mypackage/tessipack/tessipack/'
+#package_path='/home/dinilbose/mypackage/tessipack/tessipack/'
 package_path=str(Path(PACKAGEDIR).parents[0])+'/'
 
 #Data_path='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/'
-Data_path=os.path.expanduser('~/data_tessipack/data/')
-catalog_version='01'
+Data_path=config.data_folder
+#catalog_version='01'
 def pointer(catalog='mycatalog',pmemb=0,cluster='',id_mycatalog='',id_gaia='',integrate=True,real=False):
     '''Points to the catalog area'''
 
     data=''
 
-    mycatalog=pd.read_csv(package_path+'My_catalog/my_catalog_v'+catalog_version+'.csv')
+    mycatalog=pd.read_csv(config.catalog_path)
     mycatalog=mycatalog.query('PMemb>=@pmemb')
     if not id_gaia=='':
         mycatalog=mycatalog.query('id_gaia==@id_gaia')

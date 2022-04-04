@@ -15,6 +15,9 @@ from bs4 import BeautifulSoup
 
 
 eleanorpath = os.path.join(os.path.expanduser('~'), '.eleanor')
+
+from tessipack import config
+eleanorpath=os.path.dirname(config.extra_data)
 #eleanorpath ='/media/dinilbose/Masterdisk/eleanor/.eleanor'
 print("Check path")
 if not os.path.exists(eleanorpath):
@@ -23,11 +26,11 @@ if not os.path.exists(eleanorpath):
         os.mkdir(eleanorpath)
     except OSError:
         eleanorpath = os.path.dirname(__file__)
-                
+
 def hmsm_to_days(hour=0,min=0,sec=0,micro=0):
-    days = sec + (micro / 1.e6)    
-    days = min + (days / 60.)   
-    days = hour + (days / 60.)   
+    days = sec + (micro / 1.e6)
+    days = min + (days / 60.)
+    days = hour + (days / 60.)
     return days / 24.
 def date_to_jd(year,month,day):
     if month == 1 or month == 2:
@@ -36,7 +39,7 @@ def date_to_jd(year,month,day):
     else:
         yearp = year
         monthp = month
-    
+
     # this checks where we are in relation to October 15, 1582, the beginning
     # of the Gregorian calendar.
     if ((year < 1582) or
@@ -48,17 +51,17 @@ def date_to_jd(year,month,day):
         # after start of Gregorian calendar
         A = math.trunc(yearp / 100.)
         B = 2 - A + math.trunc(A / 4.)
-        
+
     if yearp < 0:
         C = math.trunc((365.25 * yearp) - 0.75)
     else:
         C = math.trunc(365.25 * yearp)
-        
+
     D = math.trunc(30.6001 * (monthp + 1))
-    
+
     jd = B + C + D + day + 1720994.5 + 0.0008  # including leap second correction
-    
-    return jd 
+
+    return jd
 
 def listFD(url, ext=''):
     page = requests.get(url).text
@@ -80,20 +83,21 @@ def update_all():
 class Update(object):
 
     def __init__(self, sector=None):
-        
+
         if sector is None:
             print('Please pass a sector into eleanor.Update()!')
             return
-        
+
         self.sector = sector
-        
+
         try:
+            print(eleanorpath + '/metadata/s{:04d}'.format(sector))
             os.mkdir(eleanorpath + '/metadata/s{:04d}'.format(sector))
             success = 1
         except FileExistsError:
             print('Sector {:d} metadata directory exists already!'.format(sector))
             success = 0
-            
+
         if success == 1:
 
             tic_north_cvz = 198237770
@@ -105,7 +109,7 @@ class Update(object):
                 self.tic = tic_north_cvz
             else:
                 self.tic = tic_south_cvz
-                
+
             if self.tic == 198237770:
                 coord = SkyCoord('16:35:50.667 +63:54:39.87', unit=(u.hourangle, u.deg))
             elif self.tic == 38846515:
@@ -129,9 +133,9 @@ class Update(object):
             self.get_cbvs()
             print('CBVs Made')
             print('Success! Sector {:2d} now available.'.format(self.sector))
-            
+
             self.try_next_sector()
-            
+
     def get_cbvs(self):
         if self.sector <= 6:
             year = 2018
@@ -155,18 +159,18 @@ class Update(object):
         for i in range(len(subdirects)):
             file = listFD(subdirects[i], ext='cbv.fits')[0]
             os.system('curl -O -L {}'.format(file))
-            
+
         time = self.cutout[1].data['TIME'] - self.cutout[1].data['TIMECORR']
 
         files = os.listdir('.')
         files = [i for i in files if i.endswith('cbv.fits') and 's{0:04d}'.format(self.sector) in i]
-        
+
         for c in range(len(files)):
             cbv      = fits.open(files[c])
             camera   = cbv[1].header['CAMERA']
             ccd      = cbv[1].header['CCD']
             cbv_time = cbv[1].data['Time']
-            
+
             new_fn = eleanorpath + '/metadata/s{0:04d}/cbv_components_s{0:04d}_{1:04d}_{2:04d}.txt'.format(self.sector, camera, ccd)
 
             convolved = np.zeros((len(time), 16))
@@ -183,16 +187,16 @@ class Update(object):
         for c in range(len(files)):
             os.remove(files[c])
 
-    
+
     def try_next_sector(self):
         codepath = os.path.dirname(__file__)
         f1 = open(codepath + '/maxsector.py', 'r')
         oldmax = float(f1.readline().split('=')[-1])
-        if self.sector > oldmax:          
+        if self.sector > oldmax:
             f = open(codepath + '/maxsector.py', 'w')
             f.write('maxsector = {:2d}'.format(self.sector))
             f.close()
-        
+
 
     def get_target(self):
         filelist = urlopen('https://archive.stsci.edu/missions/tess/download_scripts/sector/tesscurl_sector_{:d}_lc.sh'.
@@ -274,4 +278,4 @@ class Update(object):
 
         np.savetxt(eleanorpath + '/metadata/s{0:04d}/quality_s{0:04d}.txt'.format(self.sector), flags+nodata, fmt='%i')
 
-        return 
+        return
