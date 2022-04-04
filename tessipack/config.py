@@ -10,16 +10,17 @@ if not config_path.is_file():
 
     #Location of the home folder
     home_folder=home
-    main_folder=home_folder+'data_tessipack/'
+    main_folder=home_folder+'/data_tessipack/'
     #Name of the catalog file
     catalog_name='Mycatalog_v1.csv'
-    catalog_path=home_folder+'data_tessipack/'+catalog_name
+    catalog_path=main_folder+'data_tessipack/'+catalog_name
     #Location of light curves & apertures for individual stars
-    data_folder=home_folder+'data_tessipack/data/'
+    data_folder=main_folder+'data/'
     #Location to save tess files required for light curve processing
-    extra_data=home_folder+'other_data/extra_data/new_data/'
+    extra_data=main_folder+'other_data/extra_data/new_data/'
 
 else:
+    print('Config from user')
     sys.path.append(home)
     from config_tessipack import *
 
