@@ -9,7 +9,7 @@ import setuptools
 from setuptools import setup
 
 sys.path.insert(0, "eleanor")
-from version import __version__  
+from version import __version__
 
 
 long_description = \
@@ -50,11 +50,11 @@ setup(
     description='Source Extraction for TESS Full Frame Images',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    package_data={'': ['README.md', 'LICENSE']},
+    package_data={'functions': ['README.md', 'LICENSE']},
     install_requires=[
         'photutils>=0.7', 'tqdm', 'lightkurve>=1.1.0', 'astropy>=3.2.3',
         'astroquery', 'pandas',
-        'setuptools>=41.0.0', 
+        'setuptools>=41.0.0',
         'tensorflow<=1.14.0', 'vaneska', 'beautifulsoup4>=4.6.0', 'tess-point>=0.3.6'],
     classifiers=[
         'Development Status :: 3 - Alpha',

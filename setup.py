@@ -2,6 +2,8 @@
 import codecs
 from setuptools import setup
 import os.path
+import sys
+sys.path.insert(0, "eleanor")
 
 def read(rel_path):
     here = os.path.abspath(os.path.dirname(__file__))
@@ -35,6 +37,8 @@ setup(
   download_url = 'https://github.com/dinilbose/ismrpy/archive/0.2.9.tar.gz',    # I explain this later on
   keywords = ['FFI', 'TESS'], # Keywords that define your package best
   long_description=long_description,
+  package_data={'functions': ['README.md', 'LICENSE']},
+  include_package_data=True,
   long_description_content_type="text/markdown",
   classifiers=[
     'Development Status :: 3 - Alpha',      # Chose either "3 - Alpha", "4 - Beta" or "5 - Production/Stable" as the current state of your package
