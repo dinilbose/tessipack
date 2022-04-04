@@ -15,7 +15,7 @@ if not config_path.is_file():
     main_folder=home_folder+'/data_tessipack/'
     #Name of the catalog file
     catalog_name='Mycatalog_v1.csv'
-    catalog_path=main_folder+'data_tessipack/'+catalog_name
+    catalog_path=main_folder+catalog_name
     #Location of light curves & apertures for individual stars
     data_folder=main_folder+'data/'
     #Location to save tess files required for light curve processing
@@ -28,10 +28,13 @@ else:
 
 #check for home folder else copy data and files
 copy_dir=os.getcwd()+'/data/'
+copy_dir=os.path.join(os.path.dirname(__file__))+'/data/'
 print(main_folder)
 if not os.path.isdir(main_folder):
-    print('Intial files not found')
-    copy_tree(copy_dir, home_folder+'/')
+    #print('Intial files not found')
+    print('Files copied from ', copy_dir,' to ', home_folder)
+
+    copy_tree(copy_dir, home_folder)
 
     print('Copying intial files',)
 

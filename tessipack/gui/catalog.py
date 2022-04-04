@@ -10,7 +10,7 @@ from tessipack.functions import equations
 import ast
 from astropy.coordinates import SkyCoord
 from astropy import units as unit
-import tessipack.eleanor as eleanor
+from tessipack.eleanor import eleanor
 
 from tessipack.functions import utils
 from tessipack.functions import aperture
