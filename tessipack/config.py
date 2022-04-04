@@ -6,6 +6,8 @@ from pathlib import Path
 config_path = Path(config_path)
 import sys
 import shutil
+from distutils.dir_util import copy_tree
+
 if not config_path.is_file():
 
     #Location of the home folder
@@ -29,7 +31,7 @@ copy_dir=os.getcwd()+'/data/'
 print(main_folder)
 if not os.path.isdir(main_folder):
     print('Intial files not found')
-    shutil.copytree(copy_dir, home_folder+'/')
+    copy_tree(copy_dir, home_folder+'/')
 
     print('Copying intial files',)
 
