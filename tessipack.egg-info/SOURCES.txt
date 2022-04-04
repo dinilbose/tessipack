@@ -1,6 +1,7 @@
 README.md
 setup.py
 tessipack/__init__.py
+tessipack/config.py
 tessipack.egg-info/PKG-INFO
 tessipack.egg-info/SOURCES.txt
 tessipack.egg-info/dependency_links.txt
