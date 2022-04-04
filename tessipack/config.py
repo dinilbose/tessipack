@@ -9,7 +9,7 @@ import shutil
 if not config_path.is_file():
 
     #Location of the home folder
-    home_folder='/home/dinilbose/'
+    home_folder=home
     main_folder=home_folder+'data_tessipack/'
     #Name of the catalog file
     catalog_name='Mycatalog_v1.csv'
