@@ -29,7 +29,7 @@ copy_dir=os.getcwd()+'/data/'
 print(main_folder)
 if not os.path.isdir(main_folder):
     print('Intial files not found')
-    shutil.copytree(copy_dir, home_folder)
+    shutil.copytree(copy_dir, home_folder+'/')
 
     print('Copying intial files',)
 
