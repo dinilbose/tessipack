@@ -1,4 +1,4 @@
-__version__ = "0.0.7"
+__version__ = "0.0.8"
 print('Under development.....2')
 import os
 PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))

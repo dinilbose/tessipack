@@ -599,6 +599,7 @@ class Aperture(Environment):
     def reset_default_lc(self):
         id_mycatalog=self.id_mycatalog
         tb_lightcurve,fig_lightcurve=self.initiate_lk(self.id_mycatalog)
+        print('default###id_mycatalog_lightcurve',id_mycatalog)
         tb_tpf,tpf_flux=self.initiate_tpf(self.id_mycatalog)
         self.env.tb_lightcurve.data=tb_lightcurve.data
         self.env.tb_tpf.data=tb_tpf.data
