@@ -73,7 +73,7 @@ class Catalog(Environment):
         # catalog_all=mycatalog.pointer(catalog='mycatalog').query('cluster=="NGC_6208" & flag_source==6').reset_index()
         # catalog_all=mycatalog.pointer(catalog='mycatalog').query('cluster=="NGC_2477"').sort_values(by=['Gmag']).reset_index()
         # catalog_all=mycatalog.pointer(catalog='mycatalog').query('cluster=="NGC_2477"').reset_index()
-        self.id_mycatalog_all=self.catalog_all.id_mycatalog
+        self.id_mycatalog_all=list(self.catalog_all.id_mycatalog.values)
         # print('newwwwwwwwwww',id_mycatalog_all)
         self.id_all=np.arange(0,len(self.catalog_all))
         self.id=0
@@ -497,11 +497,11 @@ class Catalog(Environment):
         self.env.text_custom_star_sector.options=list([str(i) for i in all_sectors])
 
         self.env.custom_star_download_button.button_type='success'
-        self.env.tb_source.data["id"][0]=int(0)
+        self.env.tb_source.data["id"]=list(int(0))
         self.env.tb_source.data["id_all"]=[0]
         self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        self.env.tb_source.data["id_mycatalog"][0]=['custom_star']
-
+        self.env.tb_source.data["id_mycatalog"]=['custom_star']
+        print('Current tbsource',tb_source)
         self.env.tb_source.trigger("data",0,1)
 
     def update_custom_sector(self,attr,old,new):
@@ -509,9 +509,9 @@ class Catalog(Environment):
         self.env.sector=int(self.env.text_custom_star_sector.value)
 
         self.env.custom_star_download_button.button_type='success'
-        self.env.tb_source.data["id"][0]=int(0)
+        self.env.tb_source.data["id"]=list(int(0))
         self.env.tb_source.data["id_all"]=[0]
         self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        self.env.tb_source.data["id_mycatalog"][0]=['custom_star']
+        self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
         self.env.tb_source.trigger("data",0,1)
