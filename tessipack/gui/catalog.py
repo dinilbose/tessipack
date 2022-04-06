@@ -122,9 +122,6 @@ class Catalog(Environment):
         # catalog_all=catalog_all.sort_values(by=['Gmag']).reset_index()
         self.env.catalog_main=self.catalog_all.query('cluster==@self.env.default_cluster').reset_index()
 
-
-
-
         if not self.env.text_catalog_query.value=='':
             print('Query',self.env.text_catalog_query.value)
             self.catalog_all=self.env.catalog_main.reset_index(drop=True).query(self.env.text_catalog_query.value).reset_index(drop=True)
@@ -370,17 +367,37 @@ class Catalog(Environment):
 
         if self.env.selection_program_text=='Catalog':
             self.env.custom_star_download_button.button_type='danger'
-            self.id_mycatalog=self.env.text_id_mycatalog_query.value
+            #self.id_mycatalog=self.env.text_id_mycatalog_query.value
+            self.catalog_all=mycatalog.pointer(catalog='mycatalog')
+            # catalog_all=catalog_all.query('flag_source==1 & flag_duplicate==0').reset_index()
+            # catalog_all=catalog_all.sort_values(by=['Gmag']).reset_index()
+            self.env.catalog_main=self.catalog_all.query('cluster==@self.env.default_cluster').reset_index()
+
+            if not self.env.text_catalog_query.value=='':
+                print('Query',self.env.text_catalog_query.value)
+                self.catalog_all=self.env.catalog_main.reset_index(drop=True).query(self.env.text_catalog_query.value).reset_index(drop=True)
+                print(self.catalog_all)
+            elif self.env.text_catalog_query.value=='':
+                self.catalog_all=self.env.catalog_main
+
+            self.id_mycatalog_all=self.catalog_all.id_mycatalog
+
+
+            #self.update_catalog()
+
+            self.id_mycatalog=self.id_mycatalog_all[0]
+            print('Current id_mycatalog',self.id_mycatalog)
             mydata=mycatalog.pointer(id_mycatalog=self.id_mycatalog)
+            print('Current data',mydata)
             sector_list=ast.literal_eval(mydata.Sector.values[0])
             sector_list=list([str(i) for i in sector_list])
-
+            print('Sector_list',sector_list)
             self.env.int_select_sector.options=sector_list
 
             self.env.sector=sector_list[0]
-
-            tb_source_new = ColumnDataSource(data=dict(id_all=self.id_all,id_mycatalog_all=self.id_mycatalog_all,id=[self.id],id_mycatalog=[self.id_mycatalog]))
-            self.env.tb_source.data=tb_source_new.data
+            self.update_catalog()
+            #tb_source_new = ColumnDataSource(data=dict(id_all=self.id_all,id_mycatalog_all=self.id_mycatalog_all,id=[self.id],id_mycatalog=[self.id_mycatalog]))
+            #self.env.tb_source.data=tb_source_new.data
             self.env.tb_source.trigger("data",0,1)
 
         if self.env.selection_program_text=='Custom Star':
