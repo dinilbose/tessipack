@@ -18,7 +18,7 @@ import os, sys, copy
 import os.path
 import warnings
 import pickle
-import eleanor
+from .. import eleanor
 
 from .ffi import use_pointing_model, load_pointing_model, centroid_quadratic
 from .postcard import Postcard, Postcard_tesscut
@@ -723,7 +723,7 @@ class TargetData(object):
                 self.info_aperture[name]['TPF_2D_LEVEL']['corr_flux']=all_corr_lc_tpf_2d_sub[a]
 
                 #print('testing..',self.corrected_flux(flux=all_raw_lc_tpf_2d_sub[a],bkg=np.nansum(self.bkg_tpf*self.all_apertures[a],axis=(1,2)),pca=True,output=True))
-                
+
                 #print('raw_flux',np.shape(all_raw_lc_tpf_2d_sub[a]),)
 
                 #print('bkg_tpf',np.shape(self.bkg_tpf))
@@ -733,7 +733,7 @@ class TargetData(object):
                 except:
                     print('Error in TPF 2D LEVEL, Check line 734 in targetdata in elanor')
                     self.info_aperture[name]['TPF_2D_LEVEL']['pca_flux']=np.nan
-                   
+
 
 
 

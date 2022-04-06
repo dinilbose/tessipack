@@ -10,7 +10,7 @@ from tessipack.functions import equations
 import ast
 from astropy.coordinates import SkyCoord
 from astropy import units as unit
-from tessipack.eleanor import eleanor
+from tessipack import eleanor
 
 from tessipack.functions import utils
 from tessipack.functions import aperture
@@ -498,10 +498,13 @@ class Catalog(Environment):
         self.env.text_custom_star_sector.options=list([str(i) for i in all_sectors])
 
         self.env.custom_star_download_button.button_type='success'
-        self.env.tb_source.data["id"]=[0]
-        self.env.tb_source.data["id_all"]=[0]
-        self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        self.env.tb_source.data["id_mycatalog"]=['custom_star']
+        # self.env.tb_source.data["id"]=[0]
+        # self.env.tb_source.data["id_all"]=[0]
+        # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
+        # self.env.tb_source.data["id_mycatalog"]=['custom_star']
+
+        tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
+        self.env.tb_source.data=tb_source_new.data
         print('Current tbsource',self.env.tb_source.data)
         self.env.tb_source.trigger("data",0,1)
 
@@ -510,9 +513,11 @@ class Catalog(Environment):
         self.env.sector=int(self.env.text_custom_star_sector.value)
 
         self.env.custom_star_download_button.button_type='success'
-        self.env.tb_source.data["id"]=[0]
-        self.env.tb_source.data["id_all"]=[0]
-        self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        self.env.tb_source.data["id_mycatalog"]=['custom_star']
+        # self.env.tb_source.data["id"]=[0]
+        # self.env.tb_source.data["id_all"]=[0]
+        # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
+        # self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
+        tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
+        self.env.tb_source.data=tb_source_new.data
         self.env.tb_source.trigger("data",0,1)

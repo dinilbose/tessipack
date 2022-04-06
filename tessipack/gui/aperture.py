@@ -1,6 +1,6 @@
 import sys
 import os
-import eleanor
+from tessipack import eleanor
 from env import Environment
 import pandas as pd
 from bokeh.models import ColumnDataSource
@@ -468,9 +468,9 @@ class Aperture(Environment):
         all_value_n=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,data=data_frame,flux_name='pca_flux').reset_index()
 
         # print('time',time_flag,len(time),len(all_value_n))
-        time_n=all_value_n.time
-        flux_n=all_value_n.pca_flux
-        flux_err_n=all_value_n.flux_err
+        time_n=list(all_value_n.time.values)
+        flux_n=list(all_value_n.pca_flux.values)
+        flux_err_n=list(all_value_n.flux_err.values)
 
 
         data_frame=data_frame.query('time==@time_n')
@@ -572,6 +572,7 @@ class Aperture(Environment):
         # print('##################Looking for',id_mycatalog)
         #Change of plan mycatalog contains all RA DEC infos
         # eleanor_lookup_catlog=mycatalog.pointer(catalog='gaia',id_mycatalog=id_mycatalog)
+        print('')
         if type(ra)==type(None):
 
             eleanor_lookup_catlog=mycatalog.pointer(catalog='mycatalog',id_mycatalog=id_mycatalog)

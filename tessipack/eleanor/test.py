@@ -1,7 +1,7 @@
 import sys
 sys.path.append("/home/dinilbose/github/eleanor")
 print(sys.path)
-import eleanor
+from tessipack import eleanor
 star = eleanor.Source(name='WASP-100', sector=1)
 data = eleanor.TargetData(star, height=15, width=15, bkg_size=31,do_psf=True, do_pca=True)
 
