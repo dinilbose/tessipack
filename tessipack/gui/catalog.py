@@ -396,128 +396,130 @@ class Catalog(Environment):
 
     def download_custom_star(self):
         print('Download for custom_star')
-        ra=float(self.env.text_custom_star_ra.value)
-        dec=float(self.env.text_custom_star_dec.value)
+        if self.env.selection_program_text=='Custom Star':
+            ra=float(self.env.text_custom_star_ra.value)
+            dec=float(self.env.text_custom_star_dec.value)
 
-        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-        star_all = eleanor.multi_sectors(coords=center,sectors='all')
-        all_sectors=[star.sector for star in star_all]
-        # update(id_mycatalog,Sector=str(all_sectors))
-    # else:
-    #     all_sectors=ast.literal_eval(sec)
-
-
-        id_mycatalog='custom_star'
-        for sector in all_sectors:
-            print(sector)
-
-            filename_ap=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_aperture',sector=int(sector))
-            my_file = Path(filename_ap)
-            print(filename_ap)
-            if not os.path.isfile(filename_ap):
-                center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
-
-                # for star in star_all:
-                    # print('%%%%%%%%sector',star.sector)
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-                mywcs=utils.extract_essential_wcs_postcard(data_post)
-                radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
-                for k in range(len(radec)):
-                    aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture',sector=int(sector))
-                    aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture_current',sector=int(sector))
+            center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+            star_all = eleanor.multi_sectors(coords=center,sectors='all')
+            all_sectors=[star.sector for star in star_all]
+            # update(id_mycatalog,Sector=str(all_sectors))
+        # else:
+        #     all_sectors=ast.literal_eval(sec)
 
 
-            filename_flux=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux',sector=int(sector))
-            filename_flux_current=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux_current',sector=int(sector))
+            id_mycatalog='custom_star'
+            for sector in all_sectors:
+                print(sector)
 
-            if not os.path.isfile(filename_flux):
-                if type(data_post)==str:
+                filename_ap=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_aperture',sector=int(sector))
+                my_file = Path(filename_ap)
+                print(filename_ap)
+                if not os.path.isfile(filename_ap):
                     center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
                     star = eleanor.Source(coords=center,sector=int(sector))
 
+                    # for star in star_all:
+                        # print('%%%%%%%%sector',star.sector)
                     data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                    mywcs=utils.extract_essential_wcs_postcard(data_post)
+                    radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
+                    for k in range(len(radec)):
+                        aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture',sector=int(sector))
+                        aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture_current',sector=int(sector))
 
 
-                data_frame=pd.DataFrame()
-                data_frame['time']=data_post.time
-                data_frame['corr_flux']=data_post.corr_flux
-                data_frame['pca_flux']=data_post.pca_flux
-                data_frame['psf_flux']=data_post.psf_flux
-                data_frame['flux_err']=data_post.flux_err
-                data_frame['time_flag']=data_post.quality
-                data_frame['sector']=star.sector
-                data_frame.to_csv(filename_flux)
-                data_frame.to_csv(filename_flux_current)
+                filename_flux=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux',sector=int(sector))
+                filename_flux_current=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux_current',sector=int(sector))
 
-            filename_tpf=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_tpf',sector=int(sector))
-            if os.path.isfile(filename_tpf):
-                print('Tpf File exist',id_mycatalog,'sector',sector)
-            else:
-                if type(data_post)==str:
-                    print('Tpf Computing sector',id_mycatalog)
-                    center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                    star = eleanor.Source(coords=center,sector=int(sector))
-                    data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                if not os.path.isfile(filename_flux):
+                    if type(data_post)==str:
+                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+                        star = eleanor.Source(coords=center,sector=int(sector))
 
-                np.save(filename_tpf,data_post.tpf)
+                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
 
-            filename_header=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_header',sector=int(sector))
-            if os.path.isfile(filename_header):
-                print('File exist',id_mycatalog)
-            else:
-                if type(data_post)==str:
-                    print('header Computing',id_mycatalog)
-                    center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                    star = eleanor.Source(coords=center,sector=int(sector))
-                    data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+
+                    data_frame=pd.DataFrame()
+                    data_frame['time']=data_post.time
+                    data_frame['corr_flux']=data_post.corr_flux
+                    data_frame['pca_flux']=data_post.pca_flux
+                    data_frame['psf_flux']=data_post.psf_flux
+                    data_frame['flux_err']=data_post.flux_err
+                    data_frame['time_flag']=data_post.quality
+                    data_frame['sector']=star.sector
+                    data_frame.to_csv(filename_flux)
+                    data_frame.to_csv(filename_flux_current)
+
+                filename_tpf=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_tpf',sector=int(sector))
+                if os.path.isfile(filename_tpf):
+                    print('Tpf File exist',id_mycatalog,'sector',sector)
+                else:
+                    if type(data_post)==str:
+                        print('Tpf Computing sector',id_mycatalog)
+                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+                        star = eleanor.Source(coords=center,sector=int(sector))
+                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+
                     np.save(filename_tpf,data_post.tpf)
 
-                data_post.header.totextfile(filename_header,overwrite=True)
+                filename_header=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_header',sector=int(sector))
+                if os.path.isfile(filename_header):
+                    print('File exist',id_mycatalog)
+                else:
+                    if type(data_post)==str:
+                        print('header Computing',id_mycatalog)
+                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+                        star = eleanor.Source(coords=center,sector=int(sector))
+                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                        np.save(filename_tpf,data_post.tpf)
 
-            filename_time=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_time_flag',sector=int(sector))
+                    data_post.header.totextfile(filename_header,overwrite=True)
 
-            print('time_computing',id_mycatalog)
-            if not os.path.isfile(filename_time):
-                if type(data_post)==str:
-                    center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                    star = eleanor.Source(coords=center,sector=int(sector))
-                    data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                filename_time=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_time_flag',sector=int(sector))
 
-                data_frame=pd.DataFrame()
-                q=data_post.quality == 0
-                data_frame['time_flag']=q
-                data_frame.to_csv(filename_time)
+                print('time_computing',id_mycatalog)
+                if not os.path.isfile(filename_time):
+                    if type(data_post)==str:
+                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+                        star = eleanor.Source(coords=center,sector=int(sector))
+                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
 
-
-
-
-        self.env.sector=sector
+                    data_frame=pd.DataFrame()
+                    q=data_post.quality == 0
+                    data_frame['time_flag']=q
+                    data_frame.to_csv(filename_time)
 
 
-        self.env.text_custom_star_sector.options=list([str(i) for i in all_sectors])
 
-        self.env.custom_star_download_button.button_type='success'
-        # self.env.tb_source.data["id"]=[0]
-        # self.env.tb_source.data["id_all"]=[0]
-        # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        # self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
-        tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
-        self.env.tb_source.data=tb_source_new.data
-        print('Current tbsource',self.env.tb_source.data)
-        self.env.tb_source.trigger("data",0,1)
+            self.env.sector=sector
+
+
+            self.env.text_custom_star_sector.options=list([str(i) for i in all_sectors])
+
+            self.env.custom_star_download_button.button_type='success'
+            # self.env.tb_source.data["id"]=[0]
+            # self.env.tb_source.data["id_all"]=[0]
+            # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
+            # self.env.tb_source.data["id_mycatalog"]=['custom_star']
+
+            tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
+            self.env.tb_source.data=tb_source_new.data
+            print('Current tbsource',self.env.tb_source.data)
+            self.env.tb_source.trigger("data",0,1)
 
     def update_custom_sector(self,attr,old,new):
-        print('Allllllll thiiiiings')
-        self.env.sector=int(self.env.text_custom_star_sector.value)
+        if self.env.selection_program_text=='Custom Star':
+            print('Updating custom sector')
+            self.env.sector=int(self.env.text_custom_star_sector.value)
 
-        self.env.custom_star_download_button.button_type='success'
-        # self.env.tb_source.data["id"]=[0]
-        # self.env.tb_source.data["id_all"]=[0]
-        # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-        # self.env.tb_source.data["id_mycatalog"]=['custom_star']
+            self.env.custom_star_download_button.button_type='success'
+            # self.env.tb_source.data["id"]=[0]
+            # self.env.tb_source.data["id_all"]=[0]
+            # self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
+            # self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
-        tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
-        self.env.tb_source.data=tb_source_new.data
-        self.env.tb_source.trigger("data",0,1)
+            tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
+            self.env.tb_source.data=tb_source_new.data
+            self.env.tb_source.trigger("data",0,1)

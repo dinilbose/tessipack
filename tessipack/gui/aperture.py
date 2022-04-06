@@ -946,4 +946,5 @@ class Aperture(Environment):
         if self.env.show_error_bar.active[0]==1:
             tb=ColumnDataSource(data=dict(x=[], y=[]))
             self.env.tb_lightcurve_error.data=tb.data
-            self.env.tb_source.data["id_mycatalog"][0]='custom_star'
+            #strange to find this here
+            #self.env.tb_source.data["id_mycatalog"][0]='custom_star'
