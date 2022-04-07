@@ -21,4 +21,7 @@ Contents
 .. toctree::
 
    Installation
+   started
+   gui
+   file
    api
