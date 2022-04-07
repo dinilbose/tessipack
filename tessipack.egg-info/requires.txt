@@ -4,7 +4,7 @@ photutils>=0.7
 tqdm
 lightkurve>=1.1.0
 astropy
-astroquery
+astroquery<=0.4.2
 scipy
 setuptools>=41.0.0
 tensorflow<=1.14.0

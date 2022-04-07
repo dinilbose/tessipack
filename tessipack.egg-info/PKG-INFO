@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: tessipack
-Version: 0.0.20
+Version: 0.0.21
 Summary: Interactive package for analysing TESS FFI
 Home-page: https://github.com/dinilbose/tessipack
 Author: Dinil Bose P
@@ -8,6 +8,10 @@ Author-email: dinilbose@gmail.com
 License: gpl-3.0
 Download-URL: https://github.com/dinilbose/ismrpy/archive/0.2.9.tar.gz
 Description: # tessipack
+        
+        tessipack is an interactive software to analyse TESS FFI images.
+        See [documentation](https://tessipack.readthedocs.io/en/latest/) for installation and usage instructions.
+        
 Keywords: FFI,TESS
 Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha

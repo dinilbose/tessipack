@@ -74,7 +74,7 @@ Since we use the virtual environment the command is as follows.
 
 .. code-block:: bash
 
-  (env)$ python3.6 -m bokeh /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
+  (env)$ python3.6 -m bokeh serve /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
 
 We can create an easy run script for running the GUI. An example of run ``runtessipack`` is as follows.
 
@@ -82,7 +82,7 @@ We can create an easy run script for running the GUI. An example of run ``runtes
 
    #!/bin/bash
    source ~/python-virtual-environments/env/bin/activate
-   python3.6 -m bokeh /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
+   python3.6 -m bokeh serve /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
 
 make the run script executable via this command
 
