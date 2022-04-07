@@ -50,7 +50,7 @@ setup(
   install_requires=[
       'pandas>=0.13.1','bokeh==1.4.0',
       'photutils>=0.7', 'tqdm', 'lightkurve>=1.1.0', 'astropy',
-      'astroquery','scipy',
+      'astroquery<=0.4.2','scipy',
       'setuptools>=41.0.0',
       'tensorflow<=1.14.0', 'vaneska', 'beautifulsoup4>=4.6.0', 'tess-point>=0.3.6'],
   setup_requires=["numpy","pandas"],
