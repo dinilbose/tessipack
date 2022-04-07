@@ -1,4 +1,4 @@
-Welcome to Lumache's documentation!
+Welcome to tessipack documentation!
 ===================================
 
 **tessipack** is an interactive python library to analyse TESS FFI images and extract light curve. The tool can be used to analyse a group of stars.
