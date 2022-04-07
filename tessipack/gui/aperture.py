@@ -194,7 +194,7 @@ class Aperture(Environment):
 
         data_new=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,time=time,flux=flux,flux_name='pca_flux',flux_err=flux_err).reset_index()
         # print(data_new)
-        tb_lightcurve = ColumnDataSource(data=dict(time=data_new.time, flux=data_new.pca_flux,flux_err=data_new.flux_err))
+        tb_lightcurve = ColumnDataSource(data=dict(time=list(data_new.time.values), flux=list(data_new.pca_flux.values),flux_err=list(data_new.flux_err.values)))
         TOOLTIPS = [
             ("index", "$index"),
             ("(x,y)", "($x, $y)"),

@@ -1,5 +1,5 @@
-__version__ = "0.0.12"
-print('Under development.....version ',__version)
+__version__ = "0.0.20"
+print('Under development.....version ',__version__)
 import os
 PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 print(PACKAGEDIR)

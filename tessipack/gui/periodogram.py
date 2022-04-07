@@ -52,7 +52,7 @@ class Periodogram(Environment):
         time=self.env.tb_lightcurve.data["time"]
         flux_err=self.env.tb_lightcurve.data["flux_err"]
         f,p=maths.lomb_scargle(flux=flux,time=time,flux_err=flux_err)
-        tb_periodogram = ColumnDataSource(data=dict(x=f, y=p))
+        tb_periodogram = ColumnDataSource(data=dict(x=f.value, y=p.value))
 
         return tb_periodogram
 
@@ -112,8 +112,8 @@ class Periodogram(Environment):
     def find_yrange(self,data='',xlimit=[],percent=10):
         # xlimit=[100,150]
         tb_periodogram=data
-        xx=tb_periodogram.data['x'].value
-        yy=tb_periodogram.data['y'].value
+        xx=tb_periodogram.data['x']
+        yy=tb_periodogram.data['y']
         x_a=(xx>xlimit[0])&(xx<xlimit[1])
         yy_l=yy[x_a]
         yy_l=yy_l.max()+yy_l.max()*(percent/100)

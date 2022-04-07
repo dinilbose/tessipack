@@ -404,11 +404,9 @@ class Catalog(Environment):
             c=2
             self.env.sector=1
             self.env.custom_star_download_button.button_type='success'
-            self.env.tb_source.data["id"][0]=int(0)
-            self.env.tb_source.data["id_all"]=[0]
-            self.env.tb_source.data["id_mycatalog_all"]=['custom_star']
-            self.env.tb_source.data["id_mycatalog"][0]=['custom_star']
-
+            tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
+            self.env.tb_source.data=tb_source_new.data
+            print('tb_source from update_selection_program',self.env.tb_source.data)
             self.env.tb_source.trigger("data",0,1)
 
     def download_custom_star(self):
@@ -430,82 +428,71 @@ class Catalog(Environment):
                 print(sector)
 
                 filename_ap=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_aperture',sector=int(sector))
+                filename_ap_c=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_aperture_current',sector=int(sector))
+                filename_flux=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux',sector=int(sector))
+                filename_flux_current=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux_current',sector=int(sector))
+                filename_time=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_time_flag',sector=int(sector))
+                filename_header=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_header',sector=int(sector))
+                filename_tpf=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_tpf',sector=int(sector))
+                verbose=True
+                utils.remove_file_if_exist(filename_ap,verbose=verbose)
+                utils.remove_file_if_exist(filename_ap_c,verbose=verbose)
+                utils.remove_file_if_exist(filename_flux,verbose=verbose)
+                utils.remove_file_if_exist(filename_flux_current,verbose=verbose)
+                utils.remove_file_if_exist(filename_time,verbose=verbose)
+                utils.remove_file_if_exist(filename_header,verbose=verbose)
+                utils.remove_file_if_exist(filename_tpf,verbose=verbose)
+
+                # if os.path.exists(filename_ap):
+                #     os.remove(filename_ap)
+                #     print('Removing old aperture for custom star')
+                # if os.path.exists(filename_ap_c):
+                #     os.remove(filename_ap_c)
+                #     print('Removing old aperture for custom star')
+
                 my_file = Path(filename_ap)
                 print(filename_ap)
-                if not os.path.isfile(filename_ap):
-                    center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                    star = eleanor.Source(coords=center,sector=int(sector))
+                center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
+                star = eleanor.Source(coords=center,sector=int(sector))
 
                     # for star in star_all:
                         # print('%%%%%%%%sector',star.sector)
-                    data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-                    mywcs=utils.extract_essential_wcs_postcard(data_post)
-                    radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
-                    for k in range(len(radec)):
-                        aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture',sector=int(sector))
-                        aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture_current',sector=int(sector))
+                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                mywcs=utils.extract_essential_wcs_postcard(data_post)
+                radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
+                for k in range(len(radec)):
+                    aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture',sector=int(sector))
+                    aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture_current',sector=int(sector))
 
 
                 filename_flux=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux',sector=int(sector))
                 filename_flux_current=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_flux_current',sector=int(sector))
 
-                if not os.path.isfile(filename_flux):
-                    if type(data_post)==str:
-                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                        star = eleanor.Source(coords=center,sector=int(sector))
 
-                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-
-
-                    data_frame=pd.DataFrame()
-                    data_frame['time']=data_post.time
-                    data_frame['corr_flux']=data_post.corr_flux
-                    data_frame['pca_flux']=data_post.pca_flux
-                    data_frame['psf_flux']=data_post.psf_flux
-                    data_frame['flux_err']=data_post.flux_err
-                    data_frame['time_flag']=data_post.quality
-                    data_frame['sector']=star.sector
-                    data_frame.to_csv(filename_flux)
-                    data_frame.to_csv(filename_flux_current)
+                data_frame=pd.DataFrame()
+                data_frame['time']=data_post.time
+                data_frame['corr_flux']=data_post.corr_flux
+                data_frame['pca_flux']=data_post.pca_flux
+                data_frame['psf_flux']=data_post.psf_flux
+                data_frame['flux_err']=data_post.flux_err
+                data_frame['time_flag']=data_post.quality
+                data_frame['sector']=star.sector
+                data_frame.to_csv(filename_flux)
+                data_frame.to_csv(filename_flux_current)
 
                 filename_tpf=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_tpf',sector=int(sector))
-                if os.path.isfile(filename_tpf):
-                    print('Tpf File exist',id_mycatalog,'sector',sector)
-                else:
-                    if type(data_post)==str:
-                        print('Tpf Computing sector',id_mycatalog)
-                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                        star = eleanor.Source(coords=center,sector=int(sector))
-                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-
-                    np.save(filename_tpf,data_post.tpf)
+                np.save(filename_tpf,data_post.tpf)
 
                 filename_header=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_header',sector=int(sector))
-                if os.path.isfile(filename_header):
-                    print('File exist',id_mycatalog)
-                else:
-                    if type(data_post)==str:
-                        print('header Computing',id_mycatalog)
-                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                        star = eleanor.Source(coords=center,sector=int(sector))
-                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-                        np.save(filename_tpf,data_post.tpf)
-
-                    data_post.header.totextfile(filename_header,overwrite=True)
+                data_post.header.totextfile(filename_header,overwrite=True)
 
                 filename_time=mycatalog.filename(id_mycatalog=id_mycatalog,name='eleanor_time_flag',sector=int(sector))
 
                 print('time_computing',id_mycatalog)
-                if not os.path.isfile(filename_time):
-                    if type(data_post)==str:
-                        center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                        star = eleanor.Source(coords=center,sector=int(sector))
-                        data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
-
-                    data_frame=pd.DataFrame()
-                    q=data_post.quality == 0
-                    data_frame['time_flag']=q
-                    data_frame.to_csv(filename_time)
+                data_frame=pd.DataFrame()
+                q=data_post.quality == 0
+                data_frame['time_flag']=q
+                data_frame.to_csv(filename_time)
 
 
 
@@ -525,6 +512,10 @@ class Catalog(Environment):
             self.env.tb_source.data=tb_source_new.data
             print('Current tbsource',self.env.tb_source.data)
             self.env.tb_source.trigger("data",0,1)
+
+
+
+
 
     def update_custom_sector(self,attr,old,new):
         if self.env.selection_program_text=='Custom Star':

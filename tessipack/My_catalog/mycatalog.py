@@ -291,7 +291,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             data_frame.to_csv(filename_flux_current)
 
         filename_tpf=filename(id_mycatalog=id_mycatalog,name='eleanor_tpf',sector=int(sector))
-        if os.path.isfile(filename_tpf):
+        if os.path.isfile(filename_tpf) and not id_mycatalog=='custom_star':
             print('Tpf File exist',id_mycatalog,'sector',sector)
         else:
             if type(data_post)==str:
@@ -303,7 +303,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             np.save(filename_tpf,data_post.tpf)
 
         filename_header=filename(id_mycatalog=id_mycatalog,name='eleanor_header',sector=int(sector))
-        if os.path.isfile(filename_header):
+        if os.path.isfile(filename_header) and not id_mycatalog=='custom_star':
             print('File exist',id_mycatalog)
         else:
             if type(data_post)==str:
@@ -318,7 +318,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
         filename_time=filename(id_mycatalog=id_mycatalog,name='eleanor_time_flag',sector=int(sector))
 
         print('time_computing',id_mycatalog)
-        if not os.path.isfile(filename_time):
+        if not os.path.isfile(filename_time) and not id_mycatalog=='custom_star':
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))

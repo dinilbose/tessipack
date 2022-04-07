@@ -335,3 +335,10 @@ def pandas_to_astrotable(data='',time='',flux_columns=['psf_flux','pca_flux','co
         astro[i].unit=u.electron/u.s
 
     return astro
+
+import os
+def remove_file_if_exist(filename,verbose=False):
+    if os.path.exists(filename):
+        os.remove(filename)
+        if verbose==True:
+            print(filename,' Removed')

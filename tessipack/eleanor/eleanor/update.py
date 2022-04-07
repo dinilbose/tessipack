@@ -17,7 +17,7 @@ from bs4 import BeautifulSoup
 eleanorpath = os.path.join(os.path.expanduser('~'), '.eleanor')
 
 from tessipack import config
-eleanorpath=os.path.dirname(config.extra_data)
+#eleanorpath=os.path.dirname(config.extra_data)
 #eleanorpath ='/media/dinilbose/Masterdisk/eleanor/.eleanor'
 print("Check path")
 if not os.path.exists(eleanorpath):
