@@ -53,7 +53,7 @@ For deactivation of environment use (use this after the end of the installation)
 tessipack
 ---------
 
-First lets update the pip package before proceeding for installation of tessipack.
+First, let's update the pip package before proceeding with the installation of the **tessipack**.
 
 
 .. code-block:: bash
@@ -62,27 +62,34 @@ First lets update the pip package before proceeding for installation of tessipac
    (env)$ pip install tessipack
 
 
+GUI
+---
+The graphical interface of **tessipack** runs with **bokeh** package.
+``bokeh serve`` command is used to run the  GUI.
+To run the GUI we have to locate the location of the installation directory of **tessipack** package.
+Since we use the virtual environment the command is as follows.
+
+.. code-block:: bash
+
+  (env)$ python3.6 -m bokeh /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
+
+We can create an easy run script for running the GUI. An example of run ``runtessipack`` is as follows.
+
+.. code-block:: bash
+
+   #!/bin/bash
+   source ~/python-virtual-environments/env/bin/activate
+   python3.6 -m bokeh /home/dinilbose/python-virtual-environments/env/lib/python3.6/site-packages/tessipack/gui/
+
+make the run script executable via this command
+
+.. code-block:: bash
+
+   chmod +x runtessipack
+
+Run the  program using
 
 
+.. code-block:: bash
 
-
-
-Creating recipes
-----------------
-
-To retrieve a list of random ingredients,
-you can use the ``lumache.get_random_ingredients()`` function:
-
-.. autofunction:: lumache.get_random_ingredients
-
-The ``kind`` parameter should be either ``"meat"``, ``"fish"``,
-or ``"veggies"``. Otherwise, :py:func:`lumache.get_random_ingredients`
-will raise an exception.
-
-.. autoexception:: lumache.InvalidKindError
-
-For example:
-
->>> import lumache
->>> lumache.get_random_ingredients()
-['shells', 'gorgonzola', 'parsley']
+   ./runtessipack
