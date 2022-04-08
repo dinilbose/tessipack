@@ -21,7 +21,6 @@ To install python3.6 in your system if it is not available.
     sudo apt-get install python3.6
     sudo apt install python3.6-venv
     sudo apt install python3-pip
-    sudo apt-get install python3-venv
 
 
 
@@ -30,7 +29,7 @@ Virtual Environment
 To install virtual environment using pip
 
 .. code-block:: console
-
+    sudo apt-get install python3-venv
     python3.6 -m pip install virtualenv
 
 
