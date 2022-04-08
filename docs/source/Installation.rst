@@ -12,7 +12,7 @@ We urge users to create a virtual python environment to run the program.
 Python3.6
 ------------
 
-To install python3.6 in your system if its not available.
+To install python3.6 in your system if it is not available.
 
 .. code-block:: console
 
