@@ -50,7 +50,7 @@ setup(
     description='Source Extraction for TESS Full Frame Images',
     long_description=long_description,
     long_description_content_type="text/markdown",
-    package_data={'functions': ['README.md', 'LICENSE']},
+    package_data={'': ['README.md', 'LICENSE']},
     install_requires=[
         'photutils>=0.7', 'tqdm', 'lightkurve>=1.1.0', 'astropy>=3.2.3',
         'astroquery', 'pandas',
