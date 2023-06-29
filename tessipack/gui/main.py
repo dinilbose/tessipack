@@ -23,7 +23,7 @@ from aperture import Aperture
 from periodogram import Periodogram
 from control_panel import Control_panel
 from lcanalysis import Lcanalysis
-#from interactive2 import Interactive
+from mode_selection import Interactive
 
 env=Environment
 
@@ -34,7 +34,7 @@ Catalog()
 Aperture()
 Periodogram()
 #Lcanalysis()
-#Interactive()
+Interactive()
 control=Control_panel()
 
 
@@ -108,31 +108,79 @@ tab_2 = Panel(child=layout_catalog, title = 'Catalog')
 #
 #
 #
-# # tab_interactive_layout = layout([env.fig_tpfint, [Spacer(height=20), env.stretch_sliderint]],
-# #                              [env.ll_button, Spacer(width=30), env.l_button,
-# #                               Spacer(width=25), env.dnu_slider, Spacer(width=30),
-# #                               env.r_button, Spacer(width=23), env.rr_button])
-# int_selection=column(env.int_select_mass,env.int_select_z,env.int_select_y,env.int_select_age,env.int_select_alpha)
-# source_section=column(env.mesa_int_slider,env.source_int_slider,
-#                       env.frequency_minimum_text1,env.frequency_maximum_text1,
-#                       env.update_int_source_button,env.update_int_reload_button )
-#
+# tab_interactive_layout = layout([env.fig_tpfint, [Spacer(height=20), env.stretch_sliderint]],
+#                              [env.ll_button, Spacer(width=30), env.l_button,
+#                               Spacer(width=25), env.dnu_slider, Spacer(width=30),
+#                               env.r_button, Spacer(width=23), env.rr_button])
+#int_selection=column(env.int_select_mass,env.int_select_z,env.int_select_y,env.int_select_age,env.int_select_alpha)
+#source_section=column(env.mesa_int_slider,env.source_int_slider,
+#                      env.frequency_minimum_text1,env.frequency_maximum_text1,
+#                      env.update_int_source_button,env.update_int_reload_button )
+
 # tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
 #                               row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
 #                               row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text),
 #                               row(env.update_int_button,nxt_prv_button),
 #                               row(source_section,int_selection))
+
+tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
+                              row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
+                              row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text,env.dnu_text),
+                              row(env.update_int_button,nxt_prv_button),
+                              )
+
+#tab_interactive_layout=column(row(tab_int_1,column(env.fig_periodogram,env.fig_mesa_int),env.table_periodogram),row(env.text_osc_query,env.plot_mesa_osc),row(env.text_banner,))
+tab_interactive_layout=column(row(tab_int_1),row(env.text_banner))
+
+tab_c=Panel(child=tab_interactive_layout, title = 'Mode Selection')
 #
-# tab_interactive_layout=column(row(tab_int_1,column(env.fig_periodogram,env.fig_mesa_int),env.table_periodogram),row(env.text_osc_query,env.plot_mesa_osc),row(env.text_banner,))
-# tab_c=Panel(child=tab_interactive_layout, title = 'Interactive')
-#
+
+# New tab for mode selection
+tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
+                              row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
+                              row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text,env.dnu_text),
+                              row(env.update_int_button,nxt_prv_button),
+                              )
+
+#tab_interactive_layout=column(row(tab_int_1,column(env.fig_periodogram,env.fig_mesa_int),env.table_periodogram),row(env.text_osc_query,env.plot_mesa_osc),row(env.text_banner,))
+
+
+# This is new tab for mode_selection
+
+
+tab_interactive_layout=column(row(tab_int_1))
+
+
+flag_lay1=column(env.text_flag_duplicate,env.text_flag_source,env.text_flag_check,env.save_userinput_button)
+next_lay1=row(env.previous_button,env.next_button)
+#dflt_lay1=row(env.reset_axis_lc_button,env.reset_dflt_lc_button)
+next_dflt_lay=column(next_lay1)
+query_lay1=column(row(env.text_cluster_query,env.update_cluster_button),row(env.text_catalog_query,env.update_catalog_button),row(env.int_select_sector),row(env.text_id_mycatalog_query,env.update_id_mycatalog_button),row(env.text_id_query,env.update_id_button))
+# iso_lay1=column(env.text_age,env.text_metallicity,env.text_extinction_av,env.text_distance,row(env.generate_isochrone_button,env.delete_isochrone_button))
+#iso_lay1=column(env.selection_program,row(env.text_custom_star_ra),row(env.text_custom_star_dec),row(env.text_custom_star_sector,env.custom_star_download_button))
+
+text_lay1=column(env.text_banner_bp_rp,env.text_banner_Gmag,env.text_banner_dmin)
+layer_1=column(query_lay1,next_dflt_lay)
+notes_lay1=column(env.text_Notes_w)
+
+# layout_catalog=row(column(env.text_catalog_query,env.text_id_mycatalog_query,env.text_id_query),column(env.update_catalog_button,env.update_id_mycatalog_button,env.update_id_button),env.fig_hr)
+layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,column(env.fig_periodogram,env.table_periodogram)),row(env.text_banner),notes_lay1)
+tab_c = Panel(child=layout_catalog, title = 'Catalog')
+
+
+# tab_c=Panel(child=tab_interactive_layout, title = 'Mode Selection')
+
+
+
+
+
 
 
 
 
 # tab2=[]
 #tabs = Tabs(tabs = [tab_2,tab0,tab1,tab_plots,lcanalysis_panel,tab_control_panel,tab_c])
-tabs = Tabs(tabs = [tab_2,tab0])
+tabs = Tabs(tabs = [tab_c,tab_2])
 
 # tabs = Tabs(tabs = [tab_2,tab0,tab1,tab_plots,lcanalysis_panel,tab_control_panel])
 

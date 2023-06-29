@@ -277,11 +277,16 @@ class Aperture(Environment):
         yy = row + np.arange(tpf_flux.shape[2])
         xa, ya = np.meshgrid(xx, yy)
         tb_tpf = ColumnDataSource(data=dict(xx=xa-0.5, yy=ya-0.5))
+        print('Test xa', xa)
+        print('Test ya', ya)
+        
         tb_tpf.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
         tb_tpf_default=[]
         xx = column + np.arange(tpf_flux.shape[1])
         yy = row + np.arange(tpf_flux.shape[2])
         xa, ya = np.meshgrid(xx, yy)
+
+        
         return tb_tpf,tpf_flux
 
 

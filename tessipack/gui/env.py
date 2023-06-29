@@ -184,12 +184,6 @@ class Environment(object):
 
 
 
-
-
-
-
-
-
 # Control Panel
 
     Samp_status=0
@@ -228,10 +222,13 @@ class Environment(object):
     minimum_frequency=None
     maximum_frequency=None
     maxdnu=None
+    dnu_val=None
 
     minimum_frequency_text=None
     maximum_frequency_text=None
     maxdnu_text=None
+    dnu_text=None
+
     update_int_button=None
 
     mesa_osc_data=None
@@ -266,6 +263,10 @@ class Environment(object):
     tb_oscillation_modell2=None
     plot_mesa_osc=None
     text_osc_query=None
+
+
+
+
     # update_all=None
 
     # from bokeh.models.widgets import  Div

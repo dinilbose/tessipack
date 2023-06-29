@@ -7,11 +7,6 @@ Author: Dinil Bose P
 Author-email: dinilbose@gmail.com
 License: gpl-3.0
 Download-URL: https://github.com/dinilbose/ismrpy/archive/0.2.9.tar.gz
-Description: # tessipack
-        
-        tessipack is an interactive software to analyse TESS FFI images.
-        See [documentation](https://tessipack.readthedocs.io/en/latest/) for installation and usage instructions.
-        
 Keywords: FFI,TESS
 Platform: UNKNOWN
 Classifier: Development Status :: 3 - Alpha
@@ -20,3 +15,18 @@ Classifier: Topic :: Software Development :: Build Tools
 Classifier: License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)
 Classifier: Programming Language :: Python :: 3.6
 Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# tessipack
+
+tessipack is an interactive software to analyse TESS FFI images.
+See [documentation](https://tessipack.readthedocs.io/en/latest/) for installation and usage instructions.
+
+
+
+https://user-images.githubusercontent.com/24837628/178700937-87b91967-d2c8-492f-8230-df3c96572343.mp4
+
+
+
+
+
