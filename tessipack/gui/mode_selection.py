@@ -67,6 +67,7 @@ class Interactive(Environment):
         self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
         self.env.update_int_button.on_click(self.update_value)
         self.interact_echelle()
+        self.initialize_grid()
         #self.mesa_interactive()
 
 
@@ -106,6 +107,45 @@ class Interactive(Environment):
         return tb_other_periodogram,fig_other_periodogram
 
 
+
+
+    def initialize_grid(self,update=None):
+        '''
+        Initialize grid source
+        '''
+        
+        x_f=self.x_echelle 
+        y_f=self.y_echelle
+
+        x_f=x_f.value/x_f.value.max()
+        y_f=y_f.value
+        x_2d = np.array(x_f).reshape(-1, 1)
+        y_2d = np.array(y_f).reshape(-1, 1)
+        xx, yy = np.meshgrid(x_2d, y_2d)
+
+        width_mean = np.mean(np.diff(x_f))
+        height_mean =np.mean(np.diff(y_f))
+        width = np.diff(xx, axis=1)
+        height = np.diff(yy, axis=0)
+
+        center_x = xx[:-1, :-1] + width_mean / 2
+        center_y = yy[:-1, :-1] + height_mean / 2
+        if not update:
+            self.env.tb_grid_source = ColumnDataSource(data=dict(center_x=center_x, center_y=center_y))
+            self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
+                fill_alpha=0.2, line_color='blue',name='grid')
+        else:
+            tb_old=ColumnDataSource(data=dict(center_x=center_x, center_y=center_y))
+            self.env.tb_grid_source.data=tb_old.data
+            # tb_pr.data = ColumnDataSource(data=dict(x=f, y=p)).data
+
+        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
+
+            
+        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
+
+
+        # tb_grid_source=ColumnDataSource()
 
 
     def read_fits_get_fp(self):
@@ -159,14 +199,15 @@ class Interactive(Environment):
         # self.periodogram = period
 
 
-        ep, x_f, y_f = self._clean_echelle(deltanu=dnu,
+        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=dnu,
                                        minimum_frequency=self.env.minimum_frequency,
                                        maximum_frequency=self.env.maximum_frequency)
         self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
         self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
 
 
-
+        x_f=self.x_echelle 
+        y_f=self.y_echelle
 
 
         #print('Test##',self.env.fig_tpfint.select('img').glyph.y)
@@ -377,12 +418,14 @@ class Interactive(Environment):
         else:
             freq = self.periodogram.frequency  # Makes code below more readable
 
-        ep, x_f, y_f = self._clean_echelle(deltanu=deltanu,
+        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=deltanu,
                                            minimum_frequency=minimum_frequency,
                                            maximum_frequency=maximum_frequency,
                                            smooth_filter_width=smooth_filter_width,
                                            scale=scale)
         
+        x_f=self.x_echelle 
+        y_f=self.y_echelle
 
         fig = figure(plot_width=plot_width, plot_height=plot_height,
                      x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
@@ -486,58 +529,12 @@ class Interactive(Environment):
                 """Callback to take action when dnu slider changes"""
                 dnu = SeismologyQuantity(quantity=self.env.dnu_slider.value*u.microhertz,
                                          name='deltanu', method='echelle')
-                ep, x_f, y_f = self._clean_echelle(deltanu=dnu,
+                ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=dnu,
                                                minimum_frequency=self.env.minimum_frequency,
                                                maximum_frequency=self.env.maximum_frequency,
                                                smooth_filter_width=None,
                                                **kwargs)
                 self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
-                #test
-                # print('x===========',x_f[0].value)
-                # print('y===========',y_f[0].value)
-                # self.env.fig_tpfint.select('img')[0].data_source.data['x'] = x_f.value
-                # self.env.fig_tpfint.select('img')[0].data_source.data['y'] = y_f.value
-
-
-
-                print('y_f',y_f)
-                print('x_f',x_f)
-
-
-                # rows, cols = len(y_f), len(x_f)
-                # width = np.diff(x_f).repeat(rows).reshape(cols-1, rows).T
-                # height = np.diff(y_f).repeat(cols).reshape(rows, cols-2)
-
-                x_f=x_f.value/x_f.value.max()
-                y_f=y_f.value
-
-                # Reshape x and y into 2D arrays
-                x_2d = np.array(x_f).reshape(-1, 1)
-                y_2d = np.array(y_f).reshape(-1, 1)
-
-                # Create a grid from x_2d and y_2d
-                xx, yy = np.meshgrid(x_2d, y_2d)
-
-                # Create a figure
-
-                width_mean = np.mean(np.diff(x_f))
-                height_mean =np.mean(np.diff(y_f))
-                width = np.diff(xx, axis=1)
-                height = np.diff(yy, axis=0)
-
-
-                center_x = xx[:-1, :-1] + width_mean / 2
-                center_y = yy[:-1, :-1] + height_mean / 2
-
-                # # Create a figure
-                # x_coords = np.repeat(x_f[:-1], rows).reshape(cols-1, rows).T
-                # y_coords = np.repeat(y_f[:-1], cols).reshape(rows, cols-1)
-                # self.env.fig_tpfint.rect(xx.flatten(), yy.flatten(), width.flatten(), height.flatten(), fill_color='gray',
-                #     fill_alpha=0.2, line_color='blue',name='new')
-
-                self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
-                    fill_alpha=0.2, line_color='blue',name='new')
-
 
                 self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
                 self.env.dnu_val=self.env.dnu_slider.value
