@@ -164,7 +164,7 @@ layer_1=column(query_lay1,next_dflt_lay)
 notes_lay1=column(env.text_Notes_w)
 
 # layout_catalog=row(column(env.text_catalog_query,env.text_id_mycatalog_query,env.text_id_query),column(env.update_catalog_button,env.update_id_mycatalog_button,env.update_id_button),env.fig_hr)
-layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,column(env.fig_periodogram,env.table_periodogram)),row(env.text_banner),notes_lay1)
+layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,column(env.fig_other_periodogram,env.table_periodogram)),row(env.text_banner),notes_lay1)
 tab_c = Panel(child=layout_catalog, title = 'Catalog')
 
 

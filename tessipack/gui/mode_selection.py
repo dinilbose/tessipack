@@ -56,6 +56,23 @@ class Interactive(Environment):
         #extra_flag_file=self.env.extra_flag_file
         #lc=io.read_lightcurve(name='eleanor_flux',id_mycatalog=self.id_mycatalog,sector=self.env.sector,extra_flag_file=extra_flag_file,sigma=5)
         #f,p=maths.lomb_scargle(flux=lc['pca_flux'],time=lc.time,flux_err=lc.flux_err)
+        # self.tb_source.on_change('data',self.update_id)
+        #self.env.tb_periodogram.on_change('data',self.update_plot)
+        self.env.tb_other_peridogram,self.env.fig_other_periodogram=self.initialize_dnu_periodogram()
+        self.env.frequency_minimum_text=TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
+        self.env.frequency_maximum_text=TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
+        self.env.frequency_maxdnu_text=TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
+        self.env.dnu_text=TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
+
+        self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
+        self.env.update_int_button.on_click(self.update_value)
+        self.interact_echelle()
+        #self.mesa_interactive()
+
+
+    def initialize_dnu_periodogram(self):
+        '''Function initialise the the dnu periodogram table source and also the periodogram graph
+        '''
         ff,pp=self.read_fits_get_fp()
         f=(ff*u.Hz).to(u.uHz)
         p=pp*u.electron/u.s
@@ -69,27 +86,26 @@ class Interactive(Environment):
         self.env.maximum_frequency=8000
         self.env.maxdnu=50
         self.env.dnu_val=20
-        # self.tb_source.on_change('data',self.update_id)
-        #self.env.tb_periodogram.on_change('data',self.update_plot)
+        tb_other_periodogram = ColumnDataSource(
+            data=dict(frequency=list(self.periodogram.frequency.value), 
+                    power=list(self.periodogram.power.value)))
 
-        self.env.frequency_minimum_text=TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
-        self.env.frequency_maximum_text=TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
-        self.env.frequency_maxdnu_text=TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
-        self.env.dnu_text=TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
-
-        self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
-        self.env.update_int_button.on_click(self.update_value)
-        self.interact_echelle()
-        #self.mesa_interactive()
-
-
-    def initialize_dnu_periodogram():
-        '''Function initialise the the dnu periodogram table source and also the periodogram graph
-        '''
+        #intialize other periodgram
+        fig_other_periodogram = figure(
+            plot_width=self.env.plot_width,
+            plot_height=self.env.plot_height,
+            tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
+            title="Other Periodogram",tooltips=self.env.TOOLTIPS,
+        )
+        fig_other_periodogram.circle("frequency", "power", source=tb_other_periodogram, alpha=0.7,**self.env.selection,)
+        fig_other_periodogram.line("frequency","power",source=tb_other_periodogram,alpha=0.7,color="#1F77B4")
 
 
+        fig_other_periodogram.x_range.start = 200
+        fig_other_periodogram.x_range.end = 800
+        return tb_other_periodogram,fig_other_periodogram
 
-        return tb_other_peridogram, fig_echelle_periodogram
+
 
 
     def read_fits_get_fp(self):
@@ -148,6 +164,8 @@ class Interactive(Environment):
                                        maximum_frequency=self.env.maximum_frequency)
         self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
         self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
+
+
 
 
 
@@ -346,7 +364,7 @@ class Interactive(Environment):
         return ep, x_f, y_f
 
     def _make_echelle_elements(self, deltanu, cmap='viridis',
-        minimum_frequency=None, maximum_frequency=None, smooth_filter_width=.1,
+        minimum_frequency=None, maximum_frequency=None, smooth_filter_width=None,
         scale='linear', plot_width=490, plot_height=340, title='Echelle'):
         """Helper function to make the elements of the echelle diagram for bokeh plotting.
         """
@@ -364,6 +382,7 @@ class Interactive(Environment):
                                            maximum_frequency=maximum_frequency,
                                            smooth_filter_width=smooth_filter_width,
                                            scale=scale)
+        
 
         fig = figure(plot_width=plot_width, plot_height=plot_height,
                      x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
@@ -382,6 +401,8 @@ class Interactive(Environment):
         fig.image(image=[ep.value], x=x_f[0].value, y=y_f[0].value,
                   dw=1, dh=y_f[-1].value,
                   color_mapper=color_mapper, name='img')
+
+
 
         stretch_slider = RangeSlider(start=vlo,
                                      end=vhi,
@@ -468,6 +489,7 @@ class Interactive(Environment):
                 ep, x_f, y_f = self._clean_echelle(deltanu=dnu,
                                                minimum_frequency=self.env.minimum_frequency,
                                                maximum_frequency=self.env.maximum_frequency,
+                                               smooth_filter_width=None,
                                                **kwargs)
                 self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
                 #test
@@ -475,6 +497,46 @@ class Interactive(Environment):
                 # print('y===========',y_f[0].value)
                 # self.env.fig_tpfint.select('img')[0].data_source.data['x'] = x_f.value
                 # self.env.fig_tpfint.select('img')[0].data_source.data['y'] = y_f.value
+
+
+
+                print('y_f',y_f)
+                print('x_f',x_f)
+
+
+                # rows, cols = len(y_f), len(x_f)
+                # width = np.diff(x_f).repeat(rows).reshape(cols-1, rows).T
+                # height = np.diff(y_f).repeat(cols).reshape(rows, cols-2)
+
+                x_f=x_f.value/x_f.value.max()
+                y_f=y_f.value
+
+                # Reshape x and y into 2D arrays
+                x_2d = np.array(x_f).reshape(-1, 1)
+                y_2d = np.array(y_f).reshape(-1, 1)
+
+                # Create a grid from x_2d and y_2d
+                xx, yy = np.meshgrid(x_2d, y_2d)
+
+                # Create a figure
+
+                width_mean = np.mean(np.diff(x_f))
+                height_mean =np.mean(np.diff(y_f))
+                width = np.diff(xx, axis=1)
+                height = np.diff(yy, axis=0)
+
+
+                center_x = xx[:-1, :-1] + width_mean / 2
+                center_y = yy[:-1, :-1] + height_mean / 2
+
+                # # Create a figure
+                # x_coords = np.repeat(x_f[:-1], rows).reshape(cols-1, rows).T
+                # y_coords = np.repeat(y_f[:-1], cols).reshape(rows, cols-1)
+                # self.env.fig_tpfint.rect(xx.flatten(), yy.flatten(), width.flatten(), height.flatten(), fill_color='gray',
+                #     fill_alpha=0.2, line_color='blue',name='new')
+
+                self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
+                    fill_alpha=0.2, line_color='blue',name='new')
 
 
                 self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
@@ -518,461 +580,6 @@ class Interactive(Environment):
             #doc.add_root(widgets_and_figures)
         create_interact_ui()
 
-    # def find_mesa_osc(self):
-    #     import mesa_reader as mr
-    #     import mesamanager
-    #     from mesamanager import taskmanager
-    #     parsec_0_22 = {
-    #         "initial_mass": [2.04],
-    #         "initial_z": [0.0236],
-    #         "initial_y": [0.2904],
-    #         "mixing_length_alpha" : [2.0],
 
-    #     }
-    #     #mnum,mmax=taskmanager.get_mnum(parsec_0_22)
-    #     mnum=3
-    #     age=6e8
-    #     mass=2.04
-    #     mass_text='mesa_initial_mass_'+str(mass)
-    #     y_text='__initial_y_'+str(parsec_0_22['initial_y'][0])
-    #     z_text='__initial_z_'+str(parsec_0_22['initial_z'][0])
-    #     mlt_text='__mixing_length_alpha_'+str(parsec_0_22['mixing_length_alpha'][0])
-    #     directory='/media/dinilbose/Extdisk/mesamanager_data/data/0'
-    #     print(directory)
-    #     file=directory+'/LOGS'
-    #     osc_file=directory+'/oscillations_ad.csv'
-    #     # logs_dir=mr.MesaLogDir(file)
-    #     # history=pd.DataFrame(logs_dir.history_data.bulk_data)
-    #     # history=mesamanager.read_mesa_history(mnumber=0)
-    #     #
-    #     # nearest_point=history.loc[(abs(history.star_age-age)).idxmin()]
-    #     # real_age=history.star_age[(abs(history.star_age-age)).idxmin()]
-    #     # model_nearest=int(nearest_point['model_number'])
-    #     # prof_data=pd.DataFrame(logs_dir.profile_data(model_number=model_nearest).bulk_data)
-    #     # profile_nearest=logs_dir.profile_with_model_number(model_nearest)
-    #     # print('profile_nearest',profile_nearest)
-    #     # osc=pd.read_csv(osc_file)
-    #     profile_nearest=[-1]
-    #     # data=pd.read_csv(osc_file)
-    #     # data=data.query('profile==@profile_nearest & n_pg>=0')
 
-    #     data=mesamanager.read_mesa_oscillation_summary(mnum=1558)
-    #     # data=data.query('profile==@profile_nearest & n_pg>=0')
-    #     data=data.query('star_age ==@age')
 
-    #     print (data)
-    #     return data
-
-
-    # def find_mesa_osc_update(self):
-    #     import mesamanager.taskmanager as taskmanager
-    #     import mesamanager
-    #     import mesa_reader as mr
-
-    #     initial_y=float(self.env.int_select_y.value)
-    #     initial_z=float(self.env.int_select_z.value)
-    #     initial_mass=float(self.env.int_select_mass.value)
-    #     mixing_length_alpha=float(self.env.int_select_alpha.value)
-    #     max_age=float(self.env.int_select_age.value)
-    #     run_dict = {
-    #         "initial_mass": initial_mass,
-    #         "initial_z": initial_z,
-    #         "initial_y": initial_y,
-    #         "mixing_length_alpha" : mixing_length_alpha,
-    #         "max_age": max_age,
-
-    #     }
-    #     print(run_dict)
-
-    #     mnum,mmax=taskmanager.get_mnum(run_dict)
-    #     print('print mnumber',mnum)
-    #     age=max_age
-    #     directory='/media/dinilbose/Extdisk/mesamanager_data/'+'data/'+str(mnum)
-    #     file=directory+'/LOGS'
-    #     osc_file=directory+'/oscillations_ad.csv'
-    #     # logs_dir=mr.MesaLogDir(file)
-    #     # history=pd.DataFrame(logs_dir.history_data.bulk_data)
-
-    #     # history=mesamanager.read_mesa_history(mnumber=mnum)
-
-    #     # nearest_point=history.loc[(abs(history.star_age-age)).idxmin()]
-    #     # nearest_point=history.loc[((history.star_age==age)).idxmin()]
-    #     # nearest_point=history.query('star_age==@age')
-
-    #     # real_age=nearest_point.star_age.values[0]
-    #     # print('age found',real_age)
-    #     # model_nearest=int(nearest_point['model_number'])
-    #     # print('age found',real_age,model_nearest)
-
-    #     # prof_data=pd.DataFrame(logs_dir.profile_data(model_number=model_nearest).bulk_data)
-    #     # profile_nearest=logs_dir.profile_with_model_number(model_nearest)
-
-    #     # prof_data=mesamanager.read_mesa_profileindex(mnumber=mnum)
-    #     # profile_nearest=prof_data.query('model_number==@model_nearest').profile_number.values[0]
-
-
-    #     # osc=pd.read_csv(osc_file)
-    #     #print(self.env.comp_data)
-    #     # print('real_age',real_age,'star_age',age)
-    #     # print('mnumber',mnum)
-    #     # data_q=self.env.comp_data.query('name!="mesa"&max_age==@real_age &mnum==@mnum')
-    #     # nm=data_q.name.values
-    #     # print(data_q[['mnum','initial_mass','initial_z','initial_y','max_age','name']])
-    #     # pr_str=[a.split('profile')[-1].replace('_','') for a in nm]
-    #     # profile_nearest=np.unique([int(w) for w in pr_str])
-    #     # if len(profile_nearest)==0:
-    #     #      profile_nearest=np.array([0])
-    #     # profile_nearest=list(profile_nearest)
-    #     # print('profile_nearest',profile_nearest)
-
-    #     # data=pd.read_csv(osc_file)
-    #     data=mesamanager.read_mesa_oscillation_summary(mnum=mnum)
-    #     # data=data.query('profile==@profile_nearest & n_pg>=0')
-    #     data=data.query('star_age ==@age')
-    #     print('Update Current query',self.env.text_osc_query.value)
-    #     if self.env.text_osc_query.value:
-
-    #         data=data.query(self.env.text_osc_query.value).reset_index(drop=True)
-    #     #print(data)
-    #     return data
-
-
-
-    # def update_osc(self,attr,old,new):
-    #     minfreq=float(self.env.frequency_minimum_text1.value)
-    #     maxfreq=float(self.env.frequency_maximum_text1.value)
-    #     self.env.mesa_osc_data['freq']=self.env.mesa_osc_data['Re(freq)']
-    #     data=self.env.mesa_osc_data.query('freq>=@minfreq & freq<=@maxfreq')
-    #     dnu=self.env.mesa_int_slider.value
-
-    #     mesa_osc_n=data.query('l==0')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l0.data = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq)).data
-
-    #     mesa_osc_n=data.query('l==1')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l1.data = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq)).data
-
-    #     mesa_osc_n=data.query('l==2')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l2.data = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq)).data
-
-
-    #     if self.env.plot_mesa_osc.active[0]==0:
-    #         mesa_osc_n=data.query('l==0 & freq<=273')
-    #         freq = mesa_osc_n['Re(freq)'].values
-    #         self.env.tb_oscillation_modell0.data = ColumnDataSource(data=dict(x=freq,y=freq)).data
-
-    #         mesa_osc_n=data.query('l==1 & freq<=273')
-    #         freq = mesa_osc_n['Re(freq)'].values
-    #         self.env.tb_oscillation_modell1.data = ColumnDataSource(data=dict(x=freq,y=freq)).data
-
-    #         mesa_osc_n=data.query('l==2 & freq<=273')
-    #         freq = mesa_osc_n['Re(freq)'].values
-    #         self.env.tb_oscillation_modell2.data = ColumnDataSource(data=dict(x=freq,y=freq)).data
-    #     else:
-    #         self.env.tb_oscillation_modell0.data = ColumnDataSource(data=dict(x=[],y=[])).data
-    #         self.env.tb_oscillation_modell1.data = ColumnDataSource(data=dict(x=[],y=[])).data
-    #         self.env.tb_oscillation_modell2.data = ColumnDataSource(data=dict(x=[],y=[])).data
-
-
-
-
-    # def update_osc_source(self,attr,old,new):
-    #     dnu=self.env.source_int_slider.value
-    #     minfreq=float(self.env.frequency_minimum_text1.value)
-    #     maxfreq=float(self.env.frequency_maximum_text1.value)
-
-    #     freq_source=self.env.tb_periodogram_se_tb.to_df().query('x>=@minfreq & x<=@maxfreq').x.values
-    #     self.env.tb_source_osc.data=ColumnDataSource(data=dict(freq_dnu=freq_source%dnu, freq=freq_source)).data
-
-
-    # def update_osc_source_button(self):
-    #     # print('update press')
-    #     self.env.mesa_osc_data=self.find_mesa_osc_update()
-    #     # print('data update')
-    #     self.update_osc_source(0,0,0)
-    #     self.update_osc(0,0,0)
-
-    # def mesa_interactive_plot(self,data):
-    #     dnu=40
-    #     self.env.fig_mesa_int= figure(plot_width=800, plot_height=400)
-
-    #     mesa_osc_n=data.query('l==0')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l0 = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq))
-    #     self.env.fig_mesa_int.circle("freq_dnu", "freq", source=self.env.tb_mesa_osc_l0, size=10, color="navy", alpha=0.5)
-
-    #     mesa_osc_n=data.query('l==1')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l1 = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq))
-    #     self.env.fig_mesa_int.square("freq_dnu", "freq", source=self.env.tb_mesa_osc_l1, size=10, color="navy", alpha=0.5)
-
-    #     mesa_osc_n=data.query('l==2')
-    #     freq = mesa_osc_n['Re(freq)'].values
-    #     self.env.tb_mesa_osc_l2 = ColumnDataSource(data=dict(freq_dnu=freq%dnu, freq=freq))
-    #     self.env.fig_mesa_int.asterisk("freq_dnu", "freq", source=self.env.tb_mesa_osc_l2, size=10, color="navy", alpha=0.5)
-
-    #     freq_source=self.env.tb_periodogram_se_tb.to_df().x.values
-    #     print('freq',freq_source)
-    #     self.env.tb_source_osc=ColumnDataSource(data=dict(freq_dnu=freq_source%dnu, freq=freq_source))
-    #     self.env.fig_mesa_int.circle("freq_dnu", "freq", source=self.env.tb_source_osc, size=10, color="red", alpha=0.5)
-
-
-
-    # def mesa_interactive(self):
-
-
-    #     # self.env.frequency_minimum_text1.on_change('value',self.update_osc_source)
-    #     # self.env.frequency_maximum_text1.on_change('value',self.update_osc_source)
-
-
-    #     self.env.mesa_osc_data=self.find_mesa_osc()
-    #     dnu=48
-    #     maxdnu=80
-    #     self.mesa_interactive_plot(self.env.mesa_osc_data)
-    #     self.env.mesa_int_slider = Slider(start=0.01,
-    #                         end=maxdnu,
-    #                         value=dnu,
-    #                         step=0.01,
-    #                         title="Gyre Delta Nu",
-    #                         width=290)
-
-
-    #     self.env.source_int_slider = Slider(start=0.01,
-    #                         end=maxdnu,
-    #                         value=dnu,
-    #                         step=0.01,
-    #                         title="Source Delta Nu",
-    #                         width=290)
-
-
-
-
-
-
-    #     self.env.mesa_int_slider.on_change('value', self.update_osc)
-    #     self.env.source_int_slider.on_change('value', self.update_osc_source)
-    #     self.env.tb_periodogram_se_tb.on_change('data',self.update_osc_source)
-
-
-
-    #     self.env.frequency_minimum_text1=TextInput(value=str(0), title="F_min",width=150)
-    #     self.env.frequency_maximum_text1=TextInput(value=str(1500), title="F_max",width=150)
-    #     self.env.frequency_maxdnu_text1=TextInput(value=str(30), title="Maxdnu",width=150)
-    #     self.env.update_int_source_button = Button(label="Update", button_type="success",width=150)
-
-    #     self.env.update_int_source_button.on_click(self.update_osc_source_button)
-
-
-    #     self.env.comp_data=pd.read_csv('/home/dinilbose/mesamanager/Completed_task.csv',float_precision='high')
-    #     self.env.comp_data=self.env.comp_data.query('name!="mesa"')
-    #     mass_list=[str(i) for i in self.env.comp_data.initial_mass.sort_values().unique()]
-    #     self.env.int_select_mass = Select(title='mass', options=mass_list, value=mass_list[0])
-
-    #     y_list=[str(i) for i in self.env.comp_data.initial_y.unique()]
-    #     self.env.int_select_y = Select(title='y', options=y_list, value=y_list[0])
-
-    #     z_list=[str(i) for i in self.env.comp_data.initial_z.unique()]
-    #     self.env.int_select_z = Select(title='z', options=z_list, value=z_list[0])
-
-    #     alpha_list=[str(i) for i in self.env.comp_data.mixing_length_alpha.unique()]
-    #     self.env.int_select_alpha = Select(title='Alpha', options=alpha_list, value=alpha_list[0])
-
-    #     age_list=[str(i) for i in self.env.comp_data.max_age.unique()]
-    #     self.env.int_select_age = Select(title='age', options=age_list, value=age_list[0])
-
-
-    #     self.env.int_select_y.on_change('value',self.update_y_change)
-    #     self.env.int_select_z.on_change('value',self.update_z_change)
-    #     self.env.int_select_mass.on_change('value',self.update_mass_change)
-    #     self.env.int_select_alpha.on_change('value',self.update_alpha_change)
-    #     self.env.int_select_age.on_change('value',self.update_age_change)
-
-    #     self.env.update_int_reload_button = Button(label="Reload", button_type="success",width=150)
-    #     self.env.update_int_reload_button.on_click(self.update_option)
-
-
-    # def update_option(self):
-    #     print('Reloading OptionsS')
-    #     self.env.comp_data=pd.read_csv('/home/dinilbose/mesamanager/Completed_task.csv',float_precision='high')
-
-    #     self.env.comp_data=self.env.comp_data.query('name!="mesa"')
-    #     data=self.env.comp_data
-
-    #     self.env.int_select_z.options=[str(i) for i in data.initial_z.unique()]
-
-    #     self.env.int_select_age.options=[str(i) for i in data.max_age.unique()]
-
-    #     self.env.int_select_alpha.options=[str(i) for i in data.mixing_length_alpha.unique()]
-
-    #     self.env.int_select_mass.options=[str(i) for i in data.initial_mass.sort_values().unique()]
-
-    #     self.env.int_select_y.options=[str(i) for i in data.initial_y.unique()]
-
-
-
-
-    # def update_y_change(self,attr,old,new):
-    #     if self.env.interactive_file_control==-1:
-    #         self.env.interactive_file_control=0
-
-    #         value=self.env.int_select_y.value
-    #         data=self.env.comp_data.query('initial_y==@value')
-
-    #         z=self.env.int_select_z.value
-    #         if float(z) not in data.initial_z.to_list():
-    #             self.env.int_select_z.value=str(data.initial_z.to_list()[0])
-    #             self.env.int_select_z.options=[str(i) for i in data.initial_z.unique()]
-
-    #         age=self.env.int_select_age.value
-    #         if float(age) not in data.max_age.to_list():
-    #             self.env.int_select_age.value=str(data.max_age.to_list()[0])
-    #             self.env.int_select_age.options=[str(i) for i in data.max_age.unique()]
-
-    #         alpha=self.env.int_select_alpha.value
-    #         if float(alpha) not in data.mixing_length_alpha.to_list():
-    #             print('y Alpha update')
-    #             self.env.int_select_alpha.value=str(data.mixing_length_alpha.to_list()[0])
-    #             self.env.int_select_alpha.options=[str(i) for i in data.mixing_length_alpha.unique()]
-
-    #         mass=self.env.int_select_mass.value
-    #         if float(mass) not in data.initial_mass.sort_values().to_list():
-    #             self.env.int_select_mass.value=str(data.initial_mass.sort_values().to_list()[0])
-    #             self.env.int_select_mass.options=[str(i) for i in data.initial_mass.sort_values().unique()]
-
-    #         data=self.find_mesa_osc_update()
-    #         self.env.mesa_osc_data=data
-    #         self.update_osc(0,0,0)
-
-
-    # def update_z_change(self,attr,old,new):
-    #     if self.env.interactive_file_control==-1:
-    #         self.env.interactive_file_control=0
-
-    #         value=self.env.int_select_z.value
-    #         data=self.env.comp_data.query('initial_z==@value')
-
-    #         y=self.env.int_select_y.value
-    #         if float(y) not in data.initial_y.to_list():
-    #             self.env.int_select_y.value=str(data.initial_y.to_list()[0])
-    #             self.env.int_select_y.options=[str(i) for i in data.initial_y.unique()]
-
-    #         age=self.env.int_select_age.value
-    #         if float(age) not in data.max_age.to_list():
-    #             self.env.int_select_age.value=str(data.max_age.to_list()[0])
-    #             self.env.int_select_age.options=[str(i) for i in data.max_age.unique()]
-
-    #         alpha=self.env.int_select_alpha.value
-    #         if float(alpha) not in data.mixing_length_alpha.to_list():
-    #             self.env.int_select_alpha.value=str(data.mixing_length_alpha.to_list()[0])
-    #             self.env.int_select_alpha.options=[str(i) for i in data.mixing_length_alpha.unique()]
-
-    #         mass=self.env.int_select_mass.value
-    #         if float(mass) not in data.initial_mass.sort_values().to_list():
-    #             self.env.int_select_mass.value=str(data.initial_mass.sort_values().to_list()[0])
-    #             self.env.int_select_mass.options=[str(i) for i in data.initial_mass.sort_values().unique()]
-    #             print('z mass not found',mass,data.initial_mass.sort_values().to_list())
-
-    #         data=self.find_mesa_osc_update()
-    #         self.env.mesa_osc_data=data
-    #         self.update_osc(0,0,0)
-
-
-    # def update_mass_change(self,attr,old,new):
-    #     if self.env.interactive_file_control==-1:
-    #         self.env.interactive_file_control=0
-
-    #         value=self.env.int_select_mass.value
-    #         data=self.env.comp_data.query('initial_mass==@value')
-
-    #         y=self.env.int_select_y.value
-    #         if float(y) not in data.initial_y.to_list():
-    #             self.env.int_select_y.value=str(data.initial_y.to_list()[0])
-    #             self.env.int_select_y.options=[str(i) for i in data.initial_y.unique()]
-
-    #         age=self.env.int_select_age.value
-    #         if float(age) not in data.max_age.to_list():
-    #             self.env.int_select_age.value=str(data.max_age.to_list()[0])
-    #             self.env.int_select_age.options=[str(i) for i in data.max_age.unique()]
-
-    #         alpha=self.env.int_select_alpha.value
-    #         if float(alpha) not in data.mixing_length_alpha.to_list():
-    #             self.env.int_select_alpha.value=str(data.mixing_length_alpha.to_list()[0])
-    #             self.env.int_select_alpha.options=[str(i) for i in data.mixing_length_alpha.unique()]
-
-    #         z=self.env.int_select_z.value
-    #         if float(z) not in data.initial_z.to_list():
-    #             self.env.int_select_z.value=str(data.initial_z.to_list()[0])
-    #             self.env.int_select_z.options=[str(i) for i in data.initial_z.unique()]
-
-    #         data=self.find_mesa_osc_update()
-    #         self.env.mesa_osc_data=data
-    #         self.update_osc(0,0,0)
-
-
-    # def update_age_change(self,attr,old,new):
-    #     if self.env.interactive_file_control==-1:
-    #         self.env.interactive_file_control=0
-
-
-    #         value=self.env.int_select_age.value
-    #         data=self.env.comp_data.query('max_age==@value')
-
-    #         y=self.env.int_select_y.value
-    #         if float(y) not in data.initial_y.to_list():
-    #             self.env.int_select_y.value=str(data.initial_y.to_list()[0])
-    #             self.env.int_select_y.options=[str(i) for i in data.initial_y.unique()]
-
-    #         alpha=self.env.int_select_alpha.value
-    #         if float(alpha) not in data.mixing_length_alpha.to_list():
-    #             self.env.int_select_alpha.value=str(data.mixing_length_alpha.to_list()[0])
-    #             self.env.int_select_alpha.options=[str(i) for i in data.mixing_length_alpha.unique()]
-
-    #         z=self.env.int_select_z.value
-    #         if float(z) not in data.initial_z.to_list():
-    #             self.env.int_select_z.value=str(data.initial_z.to_list()[0])
-    #             self.env.int_select_z.options=[str(i) for i in data.initial_z.unique()]
-
-    #         mass=self.env.int_select_mass.value
-    #         if float(mass) not in data.initial_mass.sort_values().to_list():
-    #             self.env.int_select_mass.value=str(data.initial_mass.sort_values().to_list()[0])
-    #             self.env.int_select_mass.options=[str(i) for i in data.initial_mass.sort_values().unique()]
-
-    #         data=self.find_mesa_osc_update()
-    #         self.env.mesa_osc_data=data
-    #         self.update_osc(0,0,0)
-
-    # def update_alpha_change(self,attr,old,new):
-    #     if self.env.interactive_file_control==-1:
-    #         self.env.interactive_file_control=0
-
-    #         print('Alpha Change')
-
-    #         value=self.env.int_select_alpha.value
-    #         data=self.env.comp_data.query('mixing_length_alpha==@value')
-
-    #         y=self.env.int_select_y.value
-    #         if float(y) not in data.initial_y.to_list():
-    #             self.env.int_select_y.value=str(data.initial_y.to_list()[0])
-    #             self.env.int_select_y.options=[str(i) for i in data.initial_y.unique()]
-
-    #         z=self.env.int_select_z.value
-    #         if float(z) not in data.initial_z.to_list():
-    #             self.env.int_select_z.value=str(data.initial_z.to_list()[0])
-    #             self.env.int_select_z.options=[str(i) for i in data.initial_z.unique()]
-
-    #         mass=self.env.int_select_mass.value
-    #         if float(mass) not in data.initial_mass.sort_values().to_list():
-    #             self.env.int_select_mass.value=str(data.initial_mass.sort_values().to_list()[0])
-    #             self.env.int_select_mass.options=[str(i) for i in data.initial_mass.sort_values().unique()]
-    #         else:
-    #             print('mass not in list')
-    #         age=self.env.int_select_age.value
-    #         if float(age) not in data.max_age.to_list():
-    #             self.env.int_select_age.value=str(data.max_age.to_list()[0])
-    #             self.env.int_select_age.options=[str(i) for i in data.max_age.unique()]
-
-    #         data=self.find_mesa_osc_update()
-    #         self.env.mesa_osc_data=data
-    #         self.update_osc(0,0,0)

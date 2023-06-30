@@ -265,6 +265,10 @@ class Environment(object):
     text_osc_query=None
 
 
+# for new model_selection
+    tb_other_peridogram=None
+    fig_other_periodogram=None
+
 
 
     # update_all=None
