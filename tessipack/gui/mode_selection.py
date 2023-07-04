@@ -25,7 +25,7 @@ import Periodo
 from env import Environment
 from astropy import units
 from bokeh.models import CustomJS, TextInput, Paragraph
-from bokeh.models import Button, Select,CheckboxGroup  # for saving data
+from bokeh.models import Button, Select,CheckboxGroup,TableColumn,DataTable  # for saving data
 
 # Import the optional Bokeh dependency required by ``interact_echelle```,
 # or print a friendly error otherwise.
@@ -47,7 +47,7 @@ class Interactive(Environment):
     env=Environment
 
     def __init__(self):
-
+        self.mode_shape_selection='circle'
         self.id_mycatalog=self.env.tb_source.data['id_mycatalog'][0]
         self.palette="Spectral11"
         self.env.text_osc_query= TextInput(value='n_pg>=0', title="Select Cluster")
@@ -62,13 +62,24 @@ class Interactive(Environment):
         self.env.frequency_minimum_text=TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
         self.env.frequency_maximum_text=TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
         self.env.frequency_maxdnu_text=TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
+        
+        print('dnu_val',self.env.dnu_val)
         self.env.dnu_text=TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
 
         self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
         self.env.update_int_button.on_click(self.update_value)
+
+        
+
+
         self.interact_echelle()
         self.initialize_grid()
+        self.initialize_selection_tables()
+        self.update_selection_tables()
         #self.mesa_interactive()
+
+        self.env.test_button = Button(label="Test", button_type="success",width=150)
+        self.env.test_button.on_click(self.selection_table_to_prd_fig)
 
 
     def initialize_dnu_periodogram(self):
@@ -106,6 +117,122 @@ class Interactive(Environment):
         fig_other_periodogram.x_range.end = 800
         return tb_other_periodogram,fig_other_periodogram
 
+    def initialize_selection_tables(self):
+    
+        self.tb_se_first_source=ColumnDataSource(data=dict(x=[], y=[]))
+        self.tb_se_second_source=ColumnDataSource(data=dict(x=[], y=[]))
+        
+        columns = [
+            TableColumn(field="x", title="Slice Freq"),
+            TableColumn(field="y", title="Freq"),
+            TableColumn(field="z", title="Mod"),
+            ]
+
+        
+        self.env.table_se_first = DataTable(
+            source=self.tb_se_first_source,
+            columns=columns,
+            width=300,
+            height=300,
+            sortable=True,
+            selectable=True,
+            editable=True,
+        )
+
+        self.env.table_se_second = DataTable(
+            source=self.tb_se_first_source,
+            columns=columns,
+            width=300,
+            height=300,
+            sortable=True,
+            selectable=True,
+            editable=True,
+        )
+    
+    
+    def selection_table_to_prd_fig(self):
+        '''
+        this function moves selected indices in grid to 
+        periodogram
+        '''
+
+        # df_se=self.env.tb_grid_source.to_df()
+        print(self.env.tb_grid_source.data)
+        df_se=pd.DataFrame()
+        
+        # df_se=pd.DataFrame(self.env.tb_grid_source.data)
+        yy=self.env.tb_grid_source.data['yy']
+        xx=self.env.tb_grid_source.data['xx']
+        df_se['xx']=xx
+        df_se['yy']=yy
+        print(df_se)
+        se_indices=self.env.tb_grid_source.selected.indices
+        #print(se_indices)
+        # slice_freq=df_se.loc[se_indices]['center_y']
+        # mod_val=df_se.loc[se_indices]['center_x']
+
+        slice_freq=df_se.loc[se_indices]['yy']
+        mod_val=df_se.loc[se_indices]['xx']
+
+
+        real_freq=slice_freq+(self.dnu_val*mod_val)
+        real_freq=real_freq.round(self.env.freq_round)
+        real_freq=real_freq.to_list()
+        print(real_freq)
+        df_prd=self.env.tb_other_peridogram.to_df()
+        df_prd['frequency']=df_prd['frequency'].round(self.env.freq_round)
+        df_prd=df_prd.query('frequency==@real_freq')
+        print(df_prd)
+        self.env.tb_other_peridogram.selected.indices=df_prd.index.to_list()
+        print(df_prd.index.to_list())
+
+
+
+
+
+        
+
+
+
+
+
+
+
+
+
+
+    def update_selection_tables(self):
+        self.env.tb_grid_source.selected.js_on_change(
+            "indices",
+            CustomJS(
+                args=dict(s1=self.env.tb_grid_source,dnu=self.env.dnu_val, s2=self.tb_se_first_source, table=self.env.table_se_first),
+                code="""
+                var inds = cb_obj.indices;
+                var d1 = s1.data;
+                var d2 = s2.data;
+                //d2['x'] = []
+                //d2['y'] = []
+                for (var i = 0; i < inds.length; i++) {
+                    d2['x'].push(d1['center_y'][inds[i]])
+                    d2['y'].push(d1['center_y'][inds[i]]+(dnu*d1['center_x'][inds[i]]))
+                    d2['z'].push(d1['center_x'][inds[i]])
+                }
+                s2.change.emit();
+                table.change.emit();
+
+                var inds = source_data.selected.indices;
+                var data = source_data.data;
+                var out = "x, y\\n";
+                for (i = 0; i < inds.length; i++) {
+                    out += data['x'][inds[i]] + "," + data['y'][inds[i]] + "\\n";
+                }
+                var file = new Blob([out], {type: 'text/plain'});
+
+            """,
+            ),
+        )
+    
+
 
 
 
@@ -117,7 +244,7 @@ class Interactive(Environment):
         x_f=self.x_echelle 
         y_f=self.y_echelle
 
-        x_f=x_f.value/x_f.value.max()
+        x_f=x_f.value
         y_f=y_f.value
         x_2d = np.array(x_f).reshape(-1, 1)
         y_2d = np.array(y_f).reshape(-1, 1)
@@ -130,21 +257,39 @@ class Interactive(Environment):
 
         center_x = xx[:-1, :-1] + width_mean / 2
         center_y = yy[:-1, :-1] + height_mean / 2
+
+        xx=xx[:-1, :-1]
+        yy=yy[:-1, :-1]
+        print('y_f', y_f)
         if not update:
-            self.env.tb_grid_source = ColumnDataSource(data=dict(center_x=center_x, center_y=center_y))
-            self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
-                fill_alpha=0.2, line_color='blue',name='grid')
-        else:
-            tb_old=ColumnDataSource(data=dict(center_x=center_x, center_y=center_y))
-            self.env.tb_grid_source.data=tb_old.data
-            # tb_pr.data = ColumnDataSource(data=dict(x=f, y=p)).data
-
-        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
-
+            self.env.tb_grid_source = ColumnDataSource(
+                data=dict(center_x=center_x.flatten(), 
+                          center_y=center_y.flatten(),
+                          xx=xx.flatten(),
+                          yy=yy.flatten())
+                          )
             
+            if not self.mode_shape_selection=='circle':
+                # To be done properly
+                self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
+                    fill_alpha=0.2, line_color='blue',name='grid',source=self.env.tb_grid_source)
+            else:
+                self.env.fig_tpfint.circle(x='center_x', y='center_y',
+                                         size=2,fill_alpha=0.2, line_color='blue',source=self.env.tb_grid_source)
+        else:
+            tb_old=ColumnDataSource(data=dict(center_x=center_x.flatten(),
+                                              center_y=center_y.flatten(),
+                                              xx=xx.flatten(),
+                                              yy=yy.flatten())
+                                              )
+            self.env.tb_grid_source.data=tb_old.data
+
+
+
+
+        # tb_pr.data = ColumnDataSource(data=dict(x=f, y=p)).data
         # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
-
-
+        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
         # tb_grid_source=ColumnDataSource()
 
 
@@ -156,7 +301,12 @@ class Interactive(Environment):
         import pandas
         with fits.open('/Users/dp275303/work/tessipack_developement_test/PSD_003429205_no_gap.fits') as data:
             df = pandas.DataFrame(data[0].data)
-        return df[0].values,df[1].values
+
+        ff=df[0].values
+        pp=df[1].values
+        ff=ff.byteswap().newbyteorder()
+        pp=pp.byteswap().newbyteorder()
+        return ff,pp
 
         
 
@@ -209,6 +359,8 @@ class Interactive(Environment):
         x_f=self.x_echelle 
         y_f=self.y_echelle
 
+        #
+        self.initialize_grid(update=True)
 
         #print('Test##',self.env.fig_tpfint.select('img').glyph.y)
 
@@ -247,7 +399,8 @@ class Interactive(Environment):
         """Raises exception if `deltanu` is None and `self.deltanu` is not set."""
         if deltanu is None:
             try:
-                return self.deltanu
+                print('Check here')
+                return self.dnu_val
             except AttributeError:
                 raise AttributeError("You need to call `Seismology.estimate_deltanu()` first.")
         return deltanu
@@ -255,7 +408,7 @@ class Interactive(Environment):
 
     def _clean_echelle(self, deltanu=None, numax=None,
                          minimum_frequency=None, maximum_frequency=None,
-                         smooth_filter_width=.1, scale='linear'):
+                         smooth_filter_width=None, scale='linear'):
         """Takes input seismology object and creates the necessary arrays for an echelle
         diagram. Validates all the inputs.
 
@@ -308,6 +461,7 @@ class Interactive(Environment):
             deltanu = deltanu * self.periodogram.frequency.unit
 
         if smooth_filter_width:
+            print('Smooth filter applied')
             pgsmooth = self.periodogram.smooth(filter_width=smooth_filter_width)
             freq = pgsmooth.frequency  # Makes code below more readable below
             power = pgsmooth.power     # Makes code below more readable below
@@ -401,6 +555,9 @@ class Interactive(Environment):
         # Reshape the freq into n_rowss of n_columnss & create arays
         ef = np.reshape(ff[start : end], (n_rows, n_columns))
         x_f = ((ef[0,:]-ef[0,0]) % deltanu)
+        #Test : Scaling 
+        x_f = ((ef[0,:]) % deltanu)
+        print('x_f max',x_f.max(),deltanu)
         y_f = (ef[:,0])
         return ep, x_f, y_f
 
@@ -428,7 +585,7 @@ class Interactive(Environment):
         y_f=self.y_echelle
 
         fig = figure(plot_width=plot_width, plot_height=plot_height,
-                     x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
+                     #x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
                      title=title, tools='pan,box_zoom,reset,lasso_select',
                      toolbar_location="above",
                      border_fill_color="white",tooltips=self.env.TOOLTIPS)
@@ -441,8 +598,15 @@ class Interactive(Environment):
         vstep = (lo - hi)/500
         color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
 
-        fig.image(image=[ep.value], x=x_f[0].value, y=y_f[0].value,
-                  dw=1, dh=y_f[-1].value,
+        dw=(x_f.flatten().max()-x_f.flatten().min()).value
+        dh=(y_f.flatten().max()-y_f.flatten().min()).value
+
+
+        print('y_f',y_f)
+        print('print',dw,dh)
+
+        fig.image(image=[ep.value], x=x_f.min().value, y=y_f.min().value,
+                  dw=dw, dh=dh,
                   color_mapper=color_mapper, name='img')
 
 
@@ -500,14 +664,17 @@ class Interactive(Environment):
         maximum_frequency = kwargs.pop('maximum_frequency', self.periodogram.frequency.max().value)
         minimum_frequency = kwargs.pop('minimum_frequency', self.periodogram.frequency. min().value)
 
-        if not hasattr(self, 'deltanu'):
-            dnu = SeismologyQuantity(quantity=self.periodogram.frequency.max()/30,
-                                     name='deltanu', method='echelle')
-        else:
-            dnu = self.deltanu
-        self.deltanu=dnu
+        # if not hasattr(self, 'deltanu'):
+        #     dnu = SeismologyQuantity(quantity=self.periodogram.frequency.max()/30,
+        #                              name='deltanu', method='echelle')
+        # else:
+        #     dnu = self.deltanu
+        #print('dnu',self.deltanu)
+        # self.deltanu=dnu
+        dnu = SeismologyQuantity(quantity=self.env.dnu_val*u.microhertz,
+                                    name='deltanu', method='echelle')
         def create_interact_ui():
-            self.env.fig_tpfint, self.env.stretch_sliderint = self._make_echelle_elements(dnu,
+            self.env.fig_tpfint, self.env.stretch_sliderint = self._make_echelle_elements(deltanu=dnu,
                                               maximum_frequency=maximum_frequency,
                                               minimum_frequency=minimum_frequency,
                                               **kwargs)
@@ -535,7 +702,15 @@ class Interactive(Environment):
                                                smooth_filter_width=None,
                                                **kwargs)
                 self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
-
+                
+                x_f=self.x_echelle 
+                y_f=self.y_echelle
+                dw=(x_f.flatten().max()-x_f.flatten().min()).value
+                dh=(y_f.flatten().max()-y_f.flatten().min()).value
+                self.env.fig_tpfint.select('img')[0].glyph.dw = dw
+                self.env.fig_tpfint.select('img')[0].glyph.dh = dh
+                
+                
                 self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
                 self.env.dnu_val=self.env.dnu_slider.value
                 self.env.dnu_text.value=str(self.env.dnu_slider.value)

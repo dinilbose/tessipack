@@ -151,21 +151,24 @@ tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
 tab_interactive_layout=column(row(tab_int_1))
 
 
-flag_lay1=column(env.text_flag_duplicate,env.text_flag_source,env.text_flag_check,env.save_userinput_button)
+flag_lay1=column(env.text_flag_duplicate,env.text_flag_source,
+                 env.text_flag_check,env.save_userinput_button)
 next_lay1=row(env.previous_button,env.next_button)
-#dflt_lay1=row(env.reset_axis_lc_button,env.reset_dflt_lc_button)
 next_dflt_lay=column(next_lay1)
-query_lay1=column(row(env.text_cluster_query,env.update_cluster_button),row(env.text_catalog_query,env.update_catalog_button),row(env.int_select_sector),row(env.text_id_mycatalog_query,env.update_id_mycatalog_button),row(env.text_id_query,env.update_id_button))
-# iso_lay1=column(env.text_age,env.text_metallicity,env.text_extinction_av,env.text_distance,row(env.generate_isochrone_button,env.delete_isochrone_button))
-#iso_lay1=column(env.selection_program,row(env.text_custom_star_ra),row(env.text_custom_star_dec),row(env.text_custom_star_sector,env.custom_star_download_button))
-
+query_lay1=column(row(env.text_cluster_query,env.update_cluster_button),
+                  row(env.text_catalog_query,env.update_catalog_button),
+                  row(env.int_select_sector),row(env.text_id_mycatalog_query,
+                                                 env.update_id_mycatalog_button),
+                                                 row(env.text_id_query,env.update_id_button))
 text_lay1=column(env.text_banner_bp_rp,env.text_banner_Gmag,env.text_banner_dmin)
 layer_1=column(query_lay1,next_dflt_lay)
 notes_lay1=column(env.text_Notes_w)
 
 # layout_catalog=row(column(env.text_catalog_query,env.text_id_mycatalog_query,env.text_id_query),column(env.update_catalog_button,env.update_id_mycatalog_button,env.update_id_button),env.fig_hr)
-layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,column(env.fig_other_periodogram,env.table_periodogram)),row(env.text_banner),notes_lay1)
-tab_c = Panel(child=layout_catalog, title = 'Catalog')
+layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,
+                          column(env.fig_other_periodogram,env.table_se_first,env.test_button)),
+                          row(env.text_banner),notes_lay1)
+tab_c = Panel(child=layout_catalog, title = 'Mode Selection')
 
 
 # tab_c=Panel(child=tab_interactive_layout, title = 'Mode Selection')

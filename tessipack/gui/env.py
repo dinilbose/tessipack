@@ -268,11 +268,12 @@ class Environment(object):
 # for new model_selection
     tb_other_peridogram=None
     fig_other_periodogram=None
+    table_se_first=None
+    table_se_second=None
+    test_button=None
+    freq_round=5
 
-
-
-    # update_all=None
-
+    # update_all=None      
     # from bokeh.models.widgets import  Div
     # self.env.div_spinner = Div(text="",width=120,height=120)
     # def show_spinner():
