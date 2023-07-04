@@ -266,12 +266,13 @@ class Environment(object):
 
 
 # for new model_selection
-    tb_other_peridogram=None
+    tb_other_periodogram=None
     fig_other_periodogram=None
     table_se_first=None
     table_se_second=None
     test_button=None
     freq_round=5
+    tb_echelle_diagram=None
 
     # update_all=None      
     # from bokeh.models.widgets import  Div

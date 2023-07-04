@@ -58,20 +58,18 @@ class Interactive(Environment):
         #f,p=maths.lomb_scargle(flux=lc['pca_flux'],time=lc.time,flux_err=lc.flux_err)
         # self.tb_source.on_change('data',self.update_id)
         #self.env.tb_periodogram.on_change('data',self.update_plot)
-        self.env.tb_other_peridogram,self.env.fig_other_periodogram=self.initialize_dnu_periodogram()
+        self.env.tb_other_periodogram,self.env.fig_other_periodogram=self.initialize_dnu_periodogram()
         self.env.frequency_minimum_text=TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
         self.env.frequency_maximum_text=TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
         self.env.frequency_maxdnu_text=TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
-        
         print('dnu_val',self.env.dnu_val)
         self.env.dnu_text=TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
-
         self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
         self.env.update_int_button.on_click(self.update_value)
 
         
 
-
+        self.make_tb_echelle_diagram()
         self.interact_echelle()
         self.initialize_grid()
         self.initialize_selection_tables()
@@ -80,6 +78,41 @@ class Interactive(Environment):
 
         self.env.test_button = Button(label="Test", button_type="success",width=150)
         self.env.test_button.on_click(self.selection_table_to_prd_fig)
+
+
+    def make_tb_echelle_diagram(self):
+
+        if self.env.tb_echelle_diagram==None:
+            print('Creating an echelle diagram, Creating column source')
+            frequency=self.env.tb_other_periodogram.data['frequency']
+            power=self.env.tb_other_periodogram.data['power']
+            self.env.tb_echelle_diagram=ColumnDataSource(
+                            data=dict(image=[],
+                                    center_x=[],
+                                    center_y=[],
+                                    dw=[],
+                                    dh=[],
+                                    ))
+        #Load the values
+        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=self.dnu_val,
+                                minimum_frequency=self.env.minimum_frequency,
+                                maximum_frequency=self.env.maximum_frequency)
+
+        x_f=self.x_echelle 
+        y_f=self.y_echelle
+        dw=(x_f.flatten().max()-x_f.flatten().min()).value
+        dh=(y_f.flatten().max()-y_f.flatten().min()).value
+        new_data=ColumnDataSource(
+                        data=dict(image=[ep.value],
+                                center_x=x_f,
+                                center_y=y_f,
+                                dw=dw,
+                                dh=dh,
+                                ))
+        self.env.tb_echelle_diagram.data=new_data.data
+
+
+
 
 
     def initialize_dnu_periodogram(self):
@@ -179,11 +212,11 @@ class Interactive(Environment):
         real_freq=real_freq.round(self.env.freq_round)
         real_freq=real_freq.to_list()
         print(real_freq)
-        df_prd=self.env.tb_other_peridogram.to_df()
+        df_prd=self.env.tb_other_periodogram.to_df()
         df_prd['frequency']=df_prd['frequency'].round(self.env.freq_round)
         df_prd=df_prd.query('frequency==@real_freq')
         print(df_prd)
-        self.env.tb_other_peridogram.selected.indices=df_prd.index.to_list()
+        self.env.tb_other_periodogram.selected.indices=df_prd.index.to_list()
         print(df_prd.index.to_list())
 
 
@@ -349,7 +382,7 @@ class Interactive(Environment):
         # self.periodogram = period
 
 
-        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=dnu,
+        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=self.dnu_val,
                                        minimum_frequency=self.env.minimum_frequency,
                                        maximum_frequency=self.env.maximum_frequency)
         self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
