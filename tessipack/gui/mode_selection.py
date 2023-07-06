@@ -52,75 +52,34 @@ class Interactive(Environment):
         self.palette="Spectral11"
         self.env.text_osc_query= TextInput(value='n_pg>=0', title="Select Cluster")
 
-        #extra_flag_file='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/extra_flag.flag'
-        #extra_flag_file=self.env.extra_flag_file
-        #lc=io.read_lightcurve(name='eleanor_flux',id_mycatalog=self.id_mycatalog,sector=self.env.sector,extra_flag_file=extra_flag_file,sigma=5)
-        #f,p=maths.lomb_scargle(flux=lc['pca_flux'],time=lc.time,flux_err=lc.flux_err)
-        # self.tb_source.on_change('data',self.update_id)
-        #self.env.tb_periodogram.on_change('data',self.update_plot)
         self.env.tb_other_periodogram,self.env.fig_other_periodogram=self.initialize_dnu_periodogram()
-        self.env.frequency_minimum_text=TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
-        self.env.frequency_maximum_text=TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
-        self.env.frequency_maxdnu_text=TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
-        print('dnu_val',self.env.dnu_val)
-        self.env.dnu_text=TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
+        self.env.frequency_minimum_text = TextInput(value=str(self.env.minimum_frequency), title="Frequency_min",width=100)
+        self.env.frequency_maximum_text = TextInput(value=str(self.env.maximum_frequency), title="Frequency_max",width=100)
+        self.env.frequency_maxdnu_text = TextInput(value=str(self.env.maxdnu), title="Maxdnu",width=100)
+                
+        self.env.dnu_text = TextInput(value=str(self.env.dnu_val), title="Delta Nu",width=100)
         self.env.update_int_button = Button(label="Update Plot", button_type="success",width=150)
         self.env.update_int_button.on_click(self.update_value)
 
-        
 
         self.make_tb_echelle_diagram()
         self.interact_echelle()
-        self.initialize_grid()
         self.initialize_selection_tables()
-        self.update_selection_tables()
-        #self.mesa_interactive()
+
+
 
         self.env.test_button = Button(label="Test", button_type="success",width=150)
         self.env.test_button.on_click(self.selection_table_to_prd_fig)
 
 
-    def make_tb_echelle_diagram(self):
-
-        if self.env.tb_echelle_diagram==None:
-            print('Creating an echelle diagram, Creating column source')
-            frequency=self.env.tb_other_periodogram.data['frequency']
-            power=self.env.tb_other_periodogram.data['power']
-            self.env.tb_echelle_diagram=ColumnDataSource(
-                            data=dict(image=[],
-                                    center_x=[],
-                                    center_y=[],
-                                    dw=[],
-                                    dh=[],
-                                    ))
-        #Load the values
-        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=self.dnu_val,
-                                minimum_frequency=self.env.minimum_frequency,
-                                maximum_frequency=self.env.maximum_frequency)
-
-        x_f=self.x_echelle 
-        y_f=self.y_echelle
-        dw=(x_f.flatten().max()-x_f.flatten().min()).value
-        dh=(y_f.flatten().max()-y_f.flatten().min()).value
-        new_data=ColumnDataSource(
-                        data=dict(image=[ep.value],
-                                center_x=x_f,
-                                center_y=y_f,
-                                dw=dw,
-                                dh=dh,
-                                ))
-        self.env.tb_echelle_diagram.data=new_data.data
-
-
-
-
 
     def initialize_dnu_periodogram(self):
-        '''Function initialise the the dnu periodogram table source and also the periodogram graph
+        '''
+        Function initialise the the dnu periodogram table source and also the periodogram graph
         '''
         ff,pp=self.read_fits_get_fp()
-        f=(ff*u.Hz).to(u.uHz)
-        p=pp*u.electron/u.s
+        f=(ff*u.Hz).to(self.env.frequency_unit)
+        p=pp*self.env.power_unit
 
         from lightkurve import periodogram as lk_prd_module
         period=lk_prd_module.Periodogram(f,p)
@@ -149,6 +108,48 @@ class Interactive(Environment):
         fig_other_periodogram.x_range.start = 200
         fig_other_periodogram.x_range.end = 800
         return tb_other_periodogram,fig_other_periodogram
+
+
+    def make_tb_echelle_diagram(self):
+
+
+        if self.env.tb_echelle_diagram==None:
+            print('Creating an echelle diagram, Creating column source')
+            self.env.tb_echelle_diagram=ColumnDataSource(
+                                        data=dict(image=[],
+                                        x_f=[],
+                                        y_f=[],
+                                        dw=[],
+                                        dh=[],
+                                        ))
+        else: 
+            print('Refereshing everything')
+        #Load the values
+        frequency=self.env.tb_other_periodogram.data['frequency']*self.env.frequency_unit
+        power=self.env.tb_other_periodogram.data['power']*self.env.power_unit
+        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=self.dnu_val,
+                                minimum_frequency=self.env.minimum_frequency*self.env.frequency_unit,
+                                maximum_frequency=self.env.maximum_frequency*self.env.frequency_unit)
+        x_f=self.x_echelle 
+        y_f=self.y_echelle
+        dw=(x_f.flatten().max()-x_f.flatten().min()).value
+        dh=(y_f.flatten().max()-y_f.flatten().min()).value
+        
+        new_data=ColumnDataSource(
+                                data=dict(image=[ep.value],
+                                x_f=[x_f.value],
+                                y_f=[y_f.value],
+                                dw=[dw],
+                                dh=[dh],
+                                ))
+        self.env.tb_echelle_diagram.data = new_data.data
+        
+    def make_grid_fig(self): 
+        
+
+        self.env.fig_tpfint.rect('x_f', 'y_f', 'dw', 'dh', fill_color='gray',
+            fill_alpha=0.2, line_color='blue',name='grid',source=self.env.tb_echelle_diagram)
+
 
     def initialize_selection_tables(self):
     
@@ -185,24 +186,15 @@ class Interactive(Environment):
     
     def selection_table_to_prd_fig(self):
         '''
-        this function moves selected indices in grid to 
-        periodogram
+        This function moves selected indices in grid to periodogram
         '''
 
-        # df_se=self.env.tb_grid_source.to_df()
-        print(self.env.tb_grid_source.data)
         df_se=pd.DataFrame()
-        
-        # df_se=pd.DataFrame(self.env.tb_grid_source.data)
         yy=self.env.tb_grid_source.data['yy']
         xx=self.env.tb_grid_source.data['xx']
         df_se['xx']=xx
         df_se['yy']=yy
-        print(df_se)
         se_indices=self.env.tb_grid_source.selected.indices
-        #print(se_indices)
-        # slice_freq=df_se.loc[se_indices]['center_y']
-        # mod_val=df_se.loc[se_indices]['center_x']
 
         slice_freq=df_se.loc[se_indices]['yy']
         mod_val=df_se.loc[se_indices]['xx']
@@ -218,20 +210,6 @@ class Interactive(Environment):
         print(df_prd)
         self.env.tb_other_periodogram.selected.indices=df_prd.index.to_list()
         print(df_prd.index.to_list())
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
 
 
     def update_selection_tables(self):
@@ -266,10 +244,7 @@ class Interactive(Environment):
         )
     
 
-
-
-
-    def initialize_grid(self,update=None):
+    def initialize_grid_delete(self,update=None):
         '''
         Initialize grid source
         '''
@@ -307,7 +282,7 @@ class Interactive(Environment):
                 self.env.fig_tpfint.rect(center_x.flatten(), center_y.flatten(), width.flatten(), height.flatten(), fill_color='gray',
                     fill_alpha=0.2, line_color='blue',name='grid',source=self.env.tb_grid_source)
             else:
-                self.env.fig_tpfint.circle(x='center_x', y='center_y',
+                self.env.fig_tpfint.circle(x='x_f', y='y_f',
                                          size=2,fill_alpha=0.2, line_color='blue',source=self.env.tb_grid_source)
         else:
             tb_old=ColumnDataSource(data=dict(center_x=center_x.flatten(),
@@ -315,20 +290,15 @@ class Interactive(Environment):
                                               xx=xx.flatten(),
                                               yy=yy.flatten())
                                               )
-            self.env.tb_grid_source.data=tb_old.data
-
-
-
-
-        # tb_pr.data = ColumnDataSource(data=dict(x=f, y=p)).data
-        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
-        # self.env.fig_tpf.select('tpfimg')[0].data_source.data['image']=fig_tpf.select('tpfimg')[0].data_source.data['image']
-        # tb_grid_source=ColumnDataSource()
+            self.env.tb_grid_source.data = tb_old.data
 
 
     def read_fits_get_fp(self):
 
-        "Test function: Read fits file and get f and p"
+        
+        '''
+        Test function: Read fits file and get f and p"
+        '''
         print('Running read fits')
         from astropy.io import fits
         import pandas
@@ -357,58 +327,18 @@ class Interactive(Environment):
     def update_plot(self,attr,old,new):
 
         self.id_mycatalog=self.env.tb_source.data['id_mycatalog'][0]
-
-
-
-        #dnu = self.deltanu for current purpose
         dnu=self.dnu_val
-
-        # f=self.env.tb_periodogram.data['x']*units.microhertz
-        # p=self.env.tb_periodogram.data['y']*units.microhertz
-        #extra_flag_file='/home/dinilbose/PycharmProjects/light_cluster/cluster/Collinder_69/Data/extra_flag.flag'
-        # extra_flag_file=self.env.extra_flag_file
-        # lc=io.read_lightcurve(name='eleanor_flux',id_mycatalog=self.id_mycatalog,sector=self.env.sector,extra_flag_file=extra_flag_file,sigma=5)
-        # f,p=maths.lomb_scargle(flux=lc['pca_flux'],time=lc.time,flux_err=lc.flux_err)
-
-
-        # ff,pp=self.read_fits_get_fp()
-        # f=(ff*u.Hz).to(u.uHz)
-        # p=pp*u.electron/u.s
-        # from lightkurve import periodogram as lk_prd_module
-        # period=lk_prd_module.Periodogram(f,p)
-
-        # period=Periodo.Periodogram(frequency=f,power=p)
-
-        # self.periodogram = period
-
-
-        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=self.dnu_val,
-                                       minimum_frequency=self.env.minimum_frequency,
-                                       maximum_frequency=self.env.maximum_frequency)
-        self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
         self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)
 
 
-        x_f=self.x_echelle 
-        y_f=self.y_echelle
-
-        #
-        self.initialize_grid(update=True)
-
-        #print('Test##',self.env.fig_tpfint.select('img').glyph.y)
-
+        self.make_tb_echelle_diagram()
+        ep= self.env.tb_echelle_diagram.data['image']*self.env.power_unit
 
         lo, hi = np.nanpercentile(ep.value, [0.1, 99.9])
         vlo, vhi = 0.3 * lo, 1.7 * hi
         vstep = (lo - hi)/500
         color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
 
-        self.env.fig_tpfint.y_range.start = y_f[0].value
-        self.env.fig_tpfint.y_range.end = y_f[-1].value
-
-
-        self.env.fig_tpfint.select('img').glyph.y=y_f[0].value
-        self.env.fig_tpfint.select('img').glyph.dh=y_f[-1].value
         self.env.fig_tpfint.select('img').glyph.color_mapper.low=color_mapper.low
         self.env.fig_tpfint.select('img').glyph.color_mapper.high=color_mapper.high
         self.env.stretch_sliderint.start=vlo
@@ -420,7 +350,9 @@ class Interactive(Environment):
 
 
     def _validate_numax(self, numax):
-        """Raises exception if `numax` is None and `self.numax` is not set."""
+        """
+        Raises exception if `numax` is None and `self.numax` is not set.
+        """
         if numax is None:
             try:
                 return self.numax
@@ -429,7 +361,9 @@ class Interactive(Environment):
         return numax
 
     def _validate_deltanu(self, deltanu):
-        """Raises exception if `deltanu` is None and `self.deltanu` is not set."""
+        """
+        Raises exception if `deltanu` is None and `self.deltanu` is not set.
+        """
         if deltanu is None:
             try:
                 print('Check here')
@@ -493,14 +427,16 @@ class Interactive(Environment):
         if (not hasattr(deltanu, 'unit')) & (deltanu is not None):
             deltanu = deltanu * self.periodogram.frequency.unit
 
-        if smooth_filter_width:
-            print('Smooth filter applied')
-            pgsmooth = self.periodogram.smooth(filter_width=smooth_filter_width)
-            freq = pgsmooth.frequency  # Makes code below more readable below
-            power = pgsmooth.power     # Makes code below more readable below
-        else:
-            freq = self.periodogram.frequency  # Makes code below more readable
-            power = self.periodogram.power     # Makes code below more readable
+        # if smooth_filter_width:
+        #     print('Smooth filter applied')
+        #     pgsmooth = self.periodogram.smooth(filter_width=smooth_filter_width)
+        #     freq = pgsmooth.frequency  # Makes code below more readable below
+        #     power = pgsmooth.power     # Makes code below more readable below
+        # else:
+        #     freq = self.periodogram.frequency  # Makes code below more readable
+        #     power = self.periodogram.power     # Makes code below more readable
+        freq = self.env.tb_other_periodogram.data['frequency']*self.env.frequency_unit
+        power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
 
         fmin = freq[0]
         fmax = freq[-1]
@@ -556,7 +492,7 @@ class Interactive(Environment):
         pp = power[int(fmin/fs)-x0:int(fmax/fs)-x0] # Power range
 
         # Reshape the power into n_rows of n_columns
-        #  When modulus ~ zero, deltanu divides into frequency without remainder
+        # When modulus ~ zero, deltanu divides into frequency without remainder
         mod_zeros = find_peaks( -1.0*(ff % deltanu) )[0]
 
         # The bottom left corner of the plot is the lowest frequency that
@@ -569,12 +505,12 @@ class Interactive(Environment):
         approx_end = mod_zeros[-1]
 
         # The number of rows is the number of times you can partition your
-        #  frequency range into chunks of size deltanu, start and ending at
-        #  frequencies that divide nearly evenly into deltanu
+        # frequency range into chunks of size deltanu, start and ending at
+        # frequencies that divide nearly evenly into deltanu
         n_rows = len(mod_zeros) - 1
 
         # The number of columns is the total number of frequency points divided
-        #  by the number of rows, floor divided to the nearest integer value
+        # by the number of rows, floor divided to the nearest integer value
         n_columns =  int( (approx_end - start) / n_rows )
 
         # The exact end point is therefore the ncolumns*nrows away from the start
@@ -590,32 +526,38 @@ class Interactive(Environment):
         x_f = ((ef[0,:]-ef[0,0]) % deltanu)
         #Test : Scaling 
         x_f = ((ef[0,:]) % deltanu)
-        print('x_f max',x_f.max(),deltanu)
+        #print('x_f max',x_f.max(),deltanu)
         y_f = (ef[:,0])
         return ep, x_f, y_f
 
     def _make_echelle_elements(self, deltanu, cmap='viridis',
         minimum_frequency=None, maximum_frequency=None, smooth_filter_width=None,
         scale='linear', plot_width=490, plot_height=340, title='Echelle'):
-        """Helper function to make the elements of the echelle diagram for bokeh plotting.
         """
-        if not hasattr(deltanu, 'unit'):
-            deltanu = deltanu * self.periodogram.frequency.unit
+        Helper function to make the elements of the echelle diagram for bokeh plotting.
+        """
+        # if not hasattr(deltanu, 'unit'):
+        #     deltanu = deltanu * self.periodogram.frequency.unit
 
-        if smooth_filter_width:
-            pgsmooth = self.periodogram.smooth(filter_width=smooth_filter_width)
-            freq = pgsmooth.frequency  # Makes code below more readable below
-        else:
-            freq = self.periodogram.frequency  # Makes code below more readable
+        # if smooth_filter_width:
+        #     pgsmooth = self.periodogram.smooth(filter_width=smooth_filter_width)
+        #     freq = pgsmooth.frequency  # Makes code below more readable below
+        # else:
+        #     freq = self.periodogram.frequency  # Makes code below more readable
 
-        ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=deltanu,
-                                           minimum_frequency=minimum_frequency,
-                                           maximum_frequency=maximum_frequency,
-                                           smooth_filter_width=smooth_filter_width,
-                                           scale=scale)
-        
-        x_f=self.x_echelle 
-        y_f=self.y_echelle
+        # ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=deltanu,
+        #                                    minimum_frequency=minimum_frequency,
+        #                                    maximum_frequency=maximum_frequency,
+        #                                    smooth_filter_width=smooth_filter_width,
+        #                                    scale=scale)
+
+        freq = self.env.tb_other_periodogram.data['frequency']*self.env.frequency_unit
+        ep= self.env.tb_echelle_diagram.data['image']*self.env.power_unit
+        x_f=self.env.tb_echelle_diagram.data['x_f']*self.env.frequency_unit
+        y_f=self.env.tb_echelle_diagram.data['y_f']*self.env.frequency_unit
+        # dw=self.env.tb_echelle_diagram.data['dw']
+        # dh=self.env.tb_echelle_diagram.data['dh']
+
 
         fig = figure(plot_width=plot_width, plot_height=plot_height,
                      #x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
@@ -631,17 +573,25 @@ class Interactive(Environment):
         vstep = (lo - hi)/500
         color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
 
-        dw=(x_f.flatten().max()-x_f.flatten().min()).value
-        dh=(y_f.flatten().max()-y_f.flatten().min()).value
+        # dw=(x_f.flatten().max()-x_f.flatten().min()).value
+        # dh=(y_f.flatten().max()-y_f.flatten().min()).value
 
 
-        print('y_f',y_f)
-        print('print',dw,dh)
+        # print('y_f',y_f)
+        # print('print',dw,dh)
 
-        fig.image(image=[ep.value], x=x_f.min().value, y=y_f.min().value,
-                  dw=dw, dh=dh,
-                  color_mapper=color_mapper, name='img')
+        # fig.image(image=[ep.value], x=x_f.min().value, y=y_f.min().value,
+        #           dw=dw, dh=dh,
+        #           color_mapper=color_mapper, name='img')
 
+        fig.image(image='image', 
+                  x=x_f.min().value, 
+                  y=y_f.min().value,
+                  dw='dw', 
+                  dh='dh', 
+                  color_mapper=color_mapper, 
+                  name='img', 
+                  source=self.env.tb_echelle_diagram)
 
 
         stretch_slider = RangeSlider(start=vlo,
@@ -725,23 +675,30 @@ class Interactive(Environment):
             self.env.rr_button = Button(label=">>", button_type="default", width=30)
             self.env.ll_button = Button(label="<<", button_type="default", width=30)
 
+
+
+
+
             def update(attr, old, new):
                 """Callback to take action when dnu slider changes"""
-                dnu = SeismologyQuantity(quantity=self.env.dnu_slider.value*u.microhertz,
-                                         name='deltanu', method='echelle')
-                ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=dnu,
-                                               minimum_frequency=self.env.minimum_frequency,
-                                               maximum_frequency=self.env.maximum_frequency,
-                                               smooth_filter_width=None,
-                                               **kwargs)
-                self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
+                dnu = SeismologyQuantity(quantity=self.env.dnu_slider.value*self.env.frequency_unit,
+                                         name='deltanu', 
+                                         method='echelle')
+                # ep, self.x_echelle, self.y_echelle = self._clean_echelle(deltanu=dnu,
+                #                                minimum_frequency=self.env.minimum_frequency*self.env.frequency_unit,
+                #                                maximum_frequency=self.env.maximum_frequency*self.env.frequency_unit,
+                #                                smooth_filter_width=None,
+                #                                **kwargs)
+                self.make_tb_echelle_diagram()
+
+                # self.env.fig_tpfint.select('img')[0].data_source.data['image'] = [ep.value]
                 
-                x_f=self.x_echelle 
-                y_f=self.y_echelle
-                dw=(x_f.flatten().max()-x_f.flatten().min()).value
-                dh=(y_f.flatten().max()-y_f.flatten().min()).value
-                self.env.fig_tpfint.select('img')[0].glyph.dw = dw
-                self.env.fig_tpfint.select('img')[0].glyph.dh = dh
+                # x_f=self.x_echelle 
+                # y_f=self.y_echelle
+                # dw=(x_f.flatten().max()-x_f.flatten().min()).value
+                # dh=(y_f.flatten().max()-y_f.flatten().min()).value
+                # self.env.fig_tpfint.select('img')[0].glyph.dw = dw
+                # self.env.fig_tpfint.select('img')[0].glyph.dh = dh
                 
                 
                 self.env.fig_tpfint.xaxis.axis_label = r'Frequency / {:.3f} Mod. 1'.format(dnu)

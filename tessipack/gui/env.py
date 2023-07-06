@@ -1,3 +1,5 @@
+from astropy import units as u
+
 
 class Environment(object):
     ''' This is Class is for to share all the object along all the files
@@ -273,7 +275,13 @@ class Environment(object):
     test_button=None
     freq_round=5
     tb_echelle_diagram=None
+    frequency_unit_string='uHz'
+    frequency_unit=u.Unit(frequency_unit_string)
+    power_unit_string='u.electron/u.s'
+    power_unit=u.Unit(power_unit_string)
 
+
+    
     # update_all=None      
     # from bokeh.models.widgets import  Div
     # self.env.div_spinner = Div(text="",width=120,height=120)
