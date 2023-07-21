@@ -123,50 +123,82 @@ tab_2 = Panel(child=layout_catalog, title = 'Catalog')
 #                               row(env.update_int_button,nxt_prv_button),
 #                               row(source_section,int_selection))
 
-tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
-                              row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
-                              row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text,env.dnu_text),
-                              row(env.update_int_button,nxt_prv_button),
-                              )
+# tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
+#                               row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
+#                               row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text,env.dnu_text),
+#                               row(env.update_int_button,nxt_prv_button),
+#                               )
 
-#tab_interactive_layout=column(row(tab_int_1,column(env.fig_periodogram,env.fig_mesa_int),env.table_periodogram),row(env.text_osc_query,env.plot_mesa_osc),row(env.text_banner,))
-tab_interactive_layout=column(row(tab_int_1),row(env.text_banner))
+# tab_interactive_layout=column(row(tab_int_1),row(env.text_banner))
+# tab_c=Panel(child=tab_interactive_layout, title = 'Mode Selection')
 
-tab_c=Panel(child=tab_interactive_layout, title = 'Mode Selection')
-#
+
 
 # New tab for mode selection
-tab_int_1=column(row(env.fig_tpfint,env.stretch_sliderint),
-                              row(env.ll_button,env.l_button,env.dnu_slider,env.r_button,env.rr_button),
-                              row(env.frequency_minimum_text,env.frequency_maximum_text,env.frequency_maxdnu_text,env.dnu_text),
-                              row(env.update_int_button,nxt_prv_button),
-                              )
-
-#tab_interactive_layout=column(row(tab_int_1,column(env.fig_periodogram,env.fig_mesa_int),env.table_periodogram),row(env.text_osc_query,env.plot_mesa_osc),row(env.text_banner,))
-
-
+tab_int_1=column(row(env.fig_tpfint,
+                     env.stretch_sliderint),
+                row(env.ll_button,
+                    env.l_button,
+                    env.dnu_slider,
+                    env.r_button,
+                    env.rr_button),
+                row(env.frequency_minimum_text,
+                    env.frequency_maximum_text,
+                    env.frequency_maxdnu_text,
+                    env.dnu_text,
+                    env.echelle_noise_cuttoff_text),
+                row(env.update_int_button,
+                    nxt_prv_button),
+                )
 # This is new tab for mode_selection
 
 
-tab_interactive_layout=column(row(tab_int_1))
+tab_interactive_layout = column(row(tab_int_1))
 
 
-flag_lay1=column(env.text_flag_duplicate,env.text_flag_source,
-                 env.text_flag_check,env.save_userinput_button)
-next_lay1=row(env.previous_button,env.next_button)
-next_dflt_lay=column(next_lay1)
-query_lay1=column(row(env.text_cluster_query,env.update_cluster_button),
-                  row(env.text_catalog_query,env.update_catalog_button),
-                  row(env.int_select_sector),row(env.text_id_mycatalog_query,
-                                                 env.update_id_mycatalog_button),
-                                                 row(env.text_id_query,env.update_id_button))
-text_lay1=column(env.text_banner_bp_rp,env.text_banner_Gmag,env.text_banner_dmin)
-layer_1=column(query_lay1,next_dflt_lay)
-notes_lay1=column(env.text_Notes_w)
+flag_lay1 = column(env.text_flag_duplicate,
+                   env.text_flag_source,
+                   env.text_flag_check,
+                   env.save_userinput_button)
+
+next_lay1 = row(env.previous_button,
+                env.next_button)
+
+next_dflt_lay = column(next_lay1)
+
+query_lay1 = column(
+                row(env.text_cluster_query,
+                    env.update_cluster_button),
+                row(env.text_catalog_query,
+                    env.update_catalog_button),
+                row(env.int_select_sector),
+                row(env.text_id_mycatalog_query,
+                    env.update_id_mycatalog_button),
+                row(env.text_id_query,
+                    env.update_id_button)
+                )
+
+
+text_lay1 = column(env.text_banner_bp_rp,
+                   env.text_banner_Gmag,
+                   env.text_banner_dmin)
+
+layer_1 = column(query_lay1,next_dflt_lay)
+notes_lay1 = column(env.text_Notes_w)
 
 # layout_catalog=row(column(env.text_catalog_query,env.text_id_mycatalog_query,env.text_id_query),column(env.update_catalog_button,env.update_id_mycatalog_button,env.update_id_button),env.fig_hr)
-layout_catalog=column(row(column(layer_1,flag_lay1),tab_interactive_layout,
-                          column(env.fig_other_periodogram,env.table_se_first,env.test_button)),
+layout_catalog=column(row(column(layer_1,flag_lay1),
+                          tab_interactive_layout,
+                          column(env.fig_other_periodogram,
+                                 env.table_se_first,
+                                 row(env.test_button,
+                                     env.find_peaks_button,
+                                     env.clear_se_table1_button,
+                                     env.clear_se_grid_prd_button,
+                                     env.select_mode_menu,
+                                     env.mode_apply_button, 
+                                     )
+                                     )),
                           row(env.text_banner),notes_lay1)
 tab_c = Panel(child=layout_catalog, title = 'Mode Selection')
 
