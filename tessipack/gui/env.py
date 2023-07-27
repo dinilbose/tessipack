@@ -275,6 +275,10 @@ class Environment(object):
     #dropdown_mode_menu = None
     select_mode_menu = None
     mode_apply_button = None
+    move_se_1_2_button = None
+    move_se_2_1_button = None
+    tb_other_source = None
+
 
     # update_all=None
     # from bokeh.models.widgets import  Div

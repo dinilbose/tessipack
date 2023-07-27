@@ -26,7 +26,7 @@ from env import Environment
 from astropy import units
 from bokeh.models import CustomJS, TextInput, Paragraph
 # for saving data
-from bokeh.models import Button, Select, CheckboxGroup, TableColumn, DataTable
+from bokeh.models import Button, Select, CategoricalColorMapper, CheckboxGroup, TableColumn, DataTable
 from lightkurve import periodogram as lk_prd_module
 
 # Import the optional Bokeh dependency required by ``interact_echelle```,
@@ -40,6 +40,7 @@ try:
 except:
     # Nice error will be raised when ``interact_echelle``` is called.
     pass
+from bokeh.colors import RGB
 
 log = logging.getLogger(__name__)
 
@@ -48,6 +49,14 @@ class Interactive(Environment):
     env = Environment
 
     def __init__(self):
+
+
+        self.mode_color_map = {
+                    '-1': "blue",
+                    '0': "green",
+                    '1': "yellow",
+                    '2': "orange",
+                    }
 
         self.tb_constants_val = ColumnDataSource(
             data=dict(
@@ -76,10 +85,6 @@ class Interactive(Environment):
         self.env.update_int_button = Button(
             label="Update Plot", button_type="success", width=150)
         self.env.update_int_button.on_click(self.update_value)
-
-        # self.env.dropdown_mode_menu= Dropdown(label="Mode Select", 
-        #                                       button_type="warning", 
-        #                                       menu=['-1','0','1','2'])
         
         self.env.select_mode_menu = Select(title='Mode Select', 
                                          options=['-1','0','1','2'], 
@@ -89,10 +94,15 @@ class Interactive(Environment):
                                         button_type="success", width=150)
         self.env.mode_apply_button.on_click(self.click_mode_apply_button)
 
-        #self.env.dropdown_mode_menu.on_click(self.click_dropdown_mode_select)
-
-
-
+        self.env.move_se_1_2_button = Button(
+                                        label="Move 1 -> 2", 
+                                        button_type="success", width=150)
+        self.env.move_se_1_2_button.on_click(self.click_move_se_1_2_button)
+        self.env.move_se_2_1_button = Button(
+                                        label="Move 2 -> 1", 
+                                        button_type="success", width=150)
+        self.env.move_se_2_1_button.on_click(self.click_move_se_2_1_button)
+        
 
         self.make_tb_echelle_diagram()
         self.interact_echelle()
@@ -122,7 +132,7 @@ class Interactive(Environment):
         Function initialise the the dnu periodogram table source and also the periodogram graph
         '''
         ff, pp = self.read_fits_get_fp()
-        mm = np.ones(len(pp))*-1
+        mm = ['-1']*(len(pp))
 
         f = (ff*u.Hz).to(self.env.frequency_unit)
         p = pp*self.env.power_unit
@@ -150,9 +160,19 @@ class Interactive(Environment):
             title="Other Periodogram", tooltips=self.env.TOOLTIPS,
         )
 
+
+        color_map = self.mode_color_map
+        color_mapper = CategoricalColorMapper(
+            factors=list(color_map.keys()), 
+            palette=list(color_map.values()))
+
         fig_other_periodogram.circle("frequency", "power",
                                      source=tb_other_periodogram,
-                                     alpha=0.7, **self.env.selection,)
+                                     alpha=0.7, 
+                                     color = {'field': 'Mode', 
+                                                'transform': color_mapper},
+                                     #**self.env.selection,
+                                     )
 
         fig_other_periodogram.line("frequency", "power",
                                    source=tb_other_periodogram,
@@ -207,17 +227,15 @@ class Interactive(Environment):
         frequency = self.env.tb_other_periodogram.data['frequency'] * \
             self.env.frequency_unit
         power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
-        ep, self.x_echelle, self.y_echelle, y_original, self.xx, self.yy, self.freq_values, self.power_values = self._clean_echelle(deltanu=self.dnu_val,
-                                                                                                                                    minimum_frequency=self.env.minimum_frequency*self.env.frequency_unit,
-                                                                                                                                    maximum_frequency=self.env.maximum_frequency*self.env.frequency_unit)
-
-        # print('self.xx', self.xx)
-        # print('self.yy', self.yy)
+        (ep, self.x_echelle, self.y_echelle, y_original,self.xx, self.yy, 
+         self.freq_values, self.power_values) = self._clean_echelle(deltanu=self.dnu_val,
+                            minimum_frequency = self.env.minimum_frequency*self.env.frequency_unit,
+                            maximum_frequency = self.env.maximum_frequency*self.env.frequency_unit)
 
         x_f = self.x_echelle
         y_f = self.y_echelle
-        dw = (x_f.flatten().max()-x_f.flatten().min()).value
-        dh = (y_f.flatten().max()-y_f.flatten().min()).value
+        dw = (x_f.flatten().max() - x_f.flatten().min()).value
+        dh = (y_f.flatten().max() - y_f.flatten().min()).value
         xmin = x_f.flatten().min().value
         ymin = y_f.flatten().min().value
 
@@ -244,9 +262,9 @@ class Interactive(Environment):
         # self.tb_se_second_source=ColumnDataSource(data=dict(x=[], y=[], z=[]))
 
         self.tb_se_first_source = ColumnDataSource(
-            data=dict(Slicefreq=[], Frequency=[], Power=[], Mode=[]))
+            data=dict(Slicefreq=[], Frequency=[], Power=[], Mode=[], xx=[]))
         self.tb_se_second_source = ColumnDataSource(
-            data=dict(Slicefreq=[], Frequency=[], Power=[], Mode=[]))
+            data=dict(Slicefreq=[], Frequency=[], Power=[], Mode=[], xx=[], mode_color=[]))
         columns = [
             TableColumn(field="Slicefreq", title="Slice Freq"),
             TableColumn(field="Frequency", title="Frequency"),
@@ -276,6 +294,44 @@ class Interactive(Environment):
         )
 
 
+
+
+        # Figure 
+        # self.env.fig_tpfint.circle(x='xx', 
+        #                            y='Slicefreq',
+        #                            size=2, 
+        #                            fill_alpha=1,
+        #                            color={'field': 'Mode', 
+        #                                   'transform': color_mapper}, 
+        #                            source=self.tb_se_second_source )
+
+
+
+        # self.mode_color_map
+        # self.env.fig_tpfint.circle(x='xx', y='Slicefreq',size=2, 
+        #                            fill_alpha=0.2,
+        #                            color='mode_color', 
+        #                            source=self.tb_se_second_source )
+
+        # from bokeh.transform import linear_cmap
+        # from bokeh.palettes import Spectral4
+        # self.env.fig_tpfint.circle(x='xx', y='Slicefreq', source=self.tb_se_second_source, 
+        #                            size=10, 
+        #                            color=linear_cmap('Mode', 
+        #                                              palette=Spectral4, 
+        #                                              factors=list(color_map.keys())), 
+        #                                              legend_field='Mode', 
+        #                                              fill_alpha=0.6)
+
+
+
+        # self.env.fig_tpfint.circle(x='xx', y='Slicefreq', source=self.tb_se_second_source, 
+        #                         size=10, 
+        #                         color=linear_cmap('Mode', 
+        #                                             palette=list(color_map.values()), 
+        #                                             factors=list(color_map.keys())), 
+        #                         legend_field='Mode', 
+        #                         fill_alpha=0.6)
 
     def update_selection_tables(self):
         # self.env.tb_grid_source.selected.js_on_change(
@@ -362,8 +418,44 @@ class Interactive(Environment):
                 self.env.fig_tpfint.rect('center_x', 'center_y', width.flatten(), height.flatten(), fill_color='gray',
                                          fill_alpha=0.2, line_color='blue', name='grid', source=self.env.tb_grid_source)
             else:
-                self.env.fig_tpfint.circle(x='xx', y='yy',
-                                           size=2, fill_alpha=0.2, line_color='blue', source=self.env.tb_grid_source)
+                
+
+                color_map = self.mode_color_map
+                color_mapper = CategoricalColorMapper(
+                    factors=list(color_map.keys()), 
+                    palette=list(color_map.values()))
+
+                self.env.fig_tpfint.circle(x = 'xx', 
+                                        y = 'yy',
+                                        size = 2, 
+                                        fill_alpha = 0.2, 
+                                        line_color = {'field': 'Mode', 
+                                                'transform': color_mapper}, 
+                                        source=self.env.tb_grid_source)
+
+
+
+
+
+                # color_mapper = CategoricalColorMapper(
+                #     factors=list(color_map.keys()), 
+                #     palette=list(color_map.values()))
+                
+                # self.env.fig_tpfint.circle(x='xx', y='yy',
+                #                            size=2, 
+                #                            fill_alpha=0.2, 
+                #                            line_color='blue', 
+                #                            source=self.env.tb_grid_source)
+
+                # self.env.fig_tpfint.circle(x = 'xx', 
+                #                            y = 'yy',
+                #                            size = 2, 
+                #                            fill_alpha = 0.2, 
+                #                            color = {'field': 'Mode', 
+                #                                   'transform': color_mapper}, 
+                #                            source=self.env.tb_grid_source)
+
+
 
         val = float(self.env.echelle_noise_cuttoff_text.value)
         self.tb_constants_val.data['other_prd_cuttoff'] = list([val])
@@ -372,8 +464,10 @@ class Interactive(Environment):
         yy = np.array(self.yy)[ind]
         ff = np.array(self.freq_values)[ind]
         pp = np.array(self.power_values)[ind]
-        mm = np.ones(len(pp))*-1
-
+        # mm = list(np.ones(len(pp))*-1)
+        # mm = list(map(str,mm))
+        mm = ['-1']*(len(pp))
+        #print(mm)
         # old_data = ColumnDataSource(
         #     data=dict(
         #         # center_x=center_x.flatten(),
@@ -1014,7 +1108,7 @@ class Interactive(Environment):
         '''This function clear table1 of the program'''
 
         old_data = ColumnDataSource(
-            data=dict(Slicefreq=[], Frequency=[], Power=[],Mode=[]))
+            data=dict(Slicefreq=[], Frequency=[], Power=[],Mode=[], xx=[]))
         self.tb_se_first_source.data = old_data.data
 
     def find_peak_frequencies(self):
@@ -1109,7 +1203,7 @@ class Interactive(Environment):
                        'freq_values':'Frequency',
                        'power_values':'Power'},
                        inplace=True,)
-        df_grid = df_grid[['Slicefreq', 'Frequency', 'Power', 'Mode']]
+        df_grid = df_grid[['Slicefreq', 'Frequency', 'Power', 'Mode','xx']]
 
         all_data = pd.concat([df_table, df_grid],ignore_index=True)
         # print(all_data)
@@ -1121,7 +1215,8 @@ class Interactive(Environment):
                     data=dict(Slicefreq = df['Slicefreq'].to_list(), 
                             Frequency = df['Frequency'].to_list(), 
                             Power = df['Power'].to_list(),
-                            Mode = df['Mode'].to_list()
+                            Mode = df['Mode'].to_list(),
+                            xx = df['xx'].to_list()
                             ))
 
         self.tb_se_first_source.data = old_data.data
@@ -1215,7 +1310,88 @@ class Interactive(Environment):
 
 
     def click_mode_apply_button(self):
-
+        """
+        Change mode selection
+        """
+        self.clear_se_table1()
         print('Drop down value is', self.env.select_mode_menu.value)
-    
+        ind = self.env.tb_grid_source.selected.indices
+        df_grid = self.env.tb_grid_source.to_df()
+        df_grid.loc[ind,'Mode'] = self.env.select_mode_menu.value
+        old_data = ColumnDataSource(df_grid.to_dict('list'))
+        self.env.tb_grid_source.data = old_data.data
 
+        ind = self.env.tb_other_periodogram.selected.indices
+        df_other = self.env.tb_other_periodogram.to_df()
+        df_other.loc[ind,'Mode'] = self.env.select_mode_menu.value
+        old_data = ColumnDataSource(df_other.to_dict('list'))
+        self.env.tb_other_periodogram.data = old_data.data
+
+        self.get_all_selection_button()
+
+
+
+    def click_move_se_1_2_button(self):
+        """
+        Move frequencies from table 1 to table 2
+        """
+
+        mode = self.env.select_mode_menu.value
+        df_table1 = self.tb_se_first_source.to_df()
+        df_table1_se = df_table1.query('Mode == @mode')
+        print(df_table1_se)
+        #df_table1_left = df_table1[~df_table1.index.isin(df_table1_se.index)]
+        df_table1_left = df_table1.query('Mode != @mode')
+        print(df_table1_left.to_dict('list'))
+        old_data = ColumnDataSource(df_table1_left.to_dict('list'))
+        self.tb_se_first_source.data = old_data.data
+        # Second table
+        df_table2 = self.tb_se_second_source.to_df()
+        #df_table1_se = df_table1.query('Mode == @mode')
+        all_data = pd.concat([df_table2, df_table1_se], ignore_index=True)
+
+        #all_data['mode_color']= self.assign_mode_color(all_data.Mode.values)
+        #df_table2
+        old_data = ColumnDataSource(all_data.to_dict('list'))
+        self.tb_se_second_source.data = old_data.data
+
+    def click_move_se_2_1_button(self):
+        """
+        Move frequencies from table 1 to table 2
+        """
+
+        mode = self.env.select_mode_menu.value
+        df_table2 = self.tb_se_second_source.to_df()
+        df_table2_se = df_table2.query('Mode == @mode')
+        # print(df_table2_se)
+        #df_table1_left = df_table1[~df_table1.index.isin(df_table1_se.index)]
+        df_table2_left = df_table2.query('Mode != @mode')
+        # print(df_table2_left.to_dict('list'))
+        old_data = ColumnDataSource(df_table2_left.to_dict('list'))
+        self.tb_se_second_source.data = old_data.data
+        # Second table
+        df_table1 = self.tb_se_first_source.to_df()
+        #df_table1_se = df_table1.query('Mode == @mode')
+        all_data = pd.concat([df_table1, df_table2_se], ignore_index=True)
+        all_data =all_data.drop('mode_color',axis=1)
+        #df_table2
+        old_data = ColumnDataSource(all_data.to_dict('list'))
+        self.tb_se_first_source.data = old_data.data
+
+    def assign_mode_color(self,modes):
+        val=list(modes)
+        val= map(str, val)
+
+        val = list(map(lambda x: x.replace('-1', self.mode_color_map[-1]),val))
+        val = list(map(lambda x: x.replace('0', self.mode_color_map[0]), val))
+        val = list(map(lambda x: x.replace('1', self.mode_color_map[1]), val))
+        val = list(map(lambda x: x.replace('2', self.mode_color_map[2]), val))
+        return val
+
+
+
+
+
+        
+
+    

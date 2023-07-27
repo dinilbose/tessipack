@@ -190,14 +190,18 @@ notes_lay1 = column(env.text_Notes_w)
 layout_catalog=column(row(column(layer_1,flag_lay1),
                           tab_interactive_layout,
                           column(env.fig_other_periodogram,
-                                 env.table_se_first,
+                                 row(env.table_se_first,
+                                 env.table_se_second),
                                  row(env.test_button,
                                      env.find_peaks_button,
                                      env.clear_se_table1_button,
                                      env.clear_se_grid_prd_button,
-                                     env.select_mode_menu,
-                                     env.mode_apply_button, 
-                                     )
+                                     ),
+                                 row(env.select_mode_menu,
+                                     env.mode_apply_button,
+                                     env.move_se_1_2_button,
+                                     env.move_se_2_1_button,
+                                    )
                                      )),
                           row(env.text_banner),notes_lay1)
 tab_c = Panel(child=layout_catalog, title = 'Mode Selection')
