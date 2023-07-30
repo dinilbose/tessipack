@@ -176,7 +176,17 @@ def filename(name='',id_gaia='',id_mycatalog='',cluster='Collinder_69',sector=''
         filename=Data_path+name+'/'+cluster+'/'+'*.fits'
         filename=glob.glob(filename)
         full_path=filename
+    if name=='other_psd':
+        data_path=config.data_folder+'other/mode_selection/'+id_mycatalog
+        filename=data_path+'/'+id_mycatalog+'.fits'
+        filename=Path(filename)
+        full_path=filename
 
+    if name=='other_psd_save_freq':
+        data_path=config.data_folder+'other/mode_selection/'+id_mycatalog
+        filename=data_path+'/'+id_mycatalog+'_save_freq.csv'
+        filename=Path(filename)
+        full_path=filename
 
     if name=='temp':
         filename=Data_path+name
@@ -186,16 +196,18 @@ def filename(name='',id_gaia='',id_mycatalog='',cluster='Collinder_69',sector=''
 
 def update(id_mycatalog,**kwargs):
         '''Updates Catalog based on user inputs'''
-        mycatalog=pd.read_csv(package_path+'My_catalog/my_catalog_v'+catalog_version+'.csv')
+        current_catalog_path= config.catalog_path
+
+        mycatalog=pd.read_csv(current_catalog_path)
         mycatalog=mycatalog.set_index('id_mycatalog')
         #print('Catalog Version:',catalog_version,'Updated')
         for key in kwargs:
-            print('Version:',catalog_version,'  ',id_mycatalog,"Updated: %s: %s" % (key, kwargs[key]))
+            print('Version:',current_catalog_path,'  ',id_mycatalog,"Updated: %s: %s" % (key, kwargs[key]))
             mycatalog.loc[id_mycatalog,key]=kwargs[key]
             # print(mycatalog.head)
-        mycatalog.to_csv(package_path+'/My_catalog/my_catalog_v'+catalog_version+
-'.csv')
-
+        #mycatalog.to_csv(package_path+'/My_catalog/my_catalog_v'+catalog_version+
+#'.csv')
+        mycatalog.to_csv(config.catalog_path)
 def download_data(id_mycatalog=None,ra=None,dec=None):
     "Download data"
     from astropy.coordinates import SkyCoord

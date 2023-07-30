@@ -20,6 +20,8 @@ from lightkurve.seismology import SeismologyQuantity
 from astropy import units
 from tessipack.functions import maths
 from tessipack.functions import io
+from tessipack.My_catalog import mycatalog
+
 import lightkurve
 import Periodo
 from env import Environment
@@ -41,6 +43,7 @@ except:
     # Nice error will be raised when ``interact_echelle``` is called.
     pass
 from bokeh.colors import RGB
+import bokeh.palettes
 
 log = logging.getLogger(__name__)
 
@@ -60,13 +63,15 @@ class Interactive(Environment):
 
         self.tb_constants_val = ColumnDataSource(
             data=dict(
-                other_prd_cuttoff=list([500])
+                other_prd_cuttoff=list([500]),
+                minimum_frequency=list([0])
             )
         )
 
         self.mode_shape_selection = 'circle'
         self.id_mycatalog = self.env.tb_source.data['id_mycatalog'][0]
-        self.palette = "Spectral11"
+        #self.palette = "hot"
+
         self.env.text_osc_query = TextInput(
             value='n_pg>=0', title="Select Cluster")
 
@@ -78,7 +83,7 @@ class Interactive(Environment):
         self.env.frequency_maxdnu_text = TextInput(
             value=str(self.env.maxdnu), title="Maxdnu", width=80)
         self.env.echelle_noise_cuttoff_text = TextInput(
-            value=str(0), title="Cutt off", width=80)
+            value=str(0), title="Threshold", width=80)
 
         self.env.dnu_text = TextInput(
             value=str(self.env.dnu_val), title="Delta Nu", width=100)
@@ -88,7 +93,7 @@ class Interactive(Environment):
         
         self.env.select_mode_menu = Select(title='Mode Select', 
                                          options=['-1','0','1','2'], 
-                                         value='-1')
+                                         value='-1',width=150)
         self.env.mode_apply_button = Button(
                                         label="Select Mode", 
                                         button_type="success", width=150)
@@ -102,7 +107,33 @@ class Interactive(Environment):
                                         label="Move 2 -> 1", 
                                         button_type="success", width=150)
         self.env.move_se_2_1_button.on_click(self.click_move_se_2_1_button)
-        
+
+        self.env.save_table_2_button = Button(
+                                        label="Save Table 2", 
+                                        button_type="success", width=150)
+        self.env.save_table_2_button.on_click(self.save_table_2)
+
+        self.env.load_table_2_button = Button(
+                                        label="Load Values", 
+                                        button_type="success", width=150)
+        self.env.load_table_2_button.on_click(self.load_table)
+
+
+
+
+        self.env.select_color_palette = Select(title='Color Palette', 
+                                         options=self.env.color_palette_options, 
+                                         value=self.env.default_color_palette,
+                                         width=150)
+        self.palette = getattr(bokeh.palettes, self.env.default_color_palette)[9]
+        self.env.check_reverse_color_palette = CheckboxGroup(
+                                                            labels=['Reverse'],
+                                                            active=[1],
+                                                            height=10,
+                                                            width=10)
+
+
+
 
         self.make_tb_echelle_diagram()
         self.interact_echelle()
@@ -124,7 +155,39 @@ class Interactive(Environment):
         self.env.find_peaks_button = Button(
             label="Find Peak", button_type="success", width=150)
         self.env.find_peaks_button.on_click(self.find_peak_frequencies)
-        self.update_selection_tables()
+        #self.update_selection_tables()
+        self.env.tb_catalog_all.selected.on_change('indices',self.update_source)
+
+        self.plot_vertical_lines()
+
+
+
+
+    def update_source(self,attr,old,new):
+        ff, pp = self.read_fits_get_fp()
+        mm = ['-1']*(len(pp))
+
+
+        f = (ff*u.Hz).to(self.env.frequency_unit)
+        p = pp*self.env.power_unit
+        period = lk_prd_module.Periodogram(f, p)
+
+        self.periodogram = period
+        # self.env.minimum_frequency =   # 1
+        # self.env.maximum_frequency =   # 8000
+        # self.env.maxdnu = 50
+        # self.env.dnu_val = 24.8
+        old_data= ColumnDataSource(
+            data=dict(
+                frequency=list(self.periodogram.frequency.value),
+                power=list(self.periodogram.power.value),
+                Mode = mm,
+                # cuttoff=list(np.array([0])),
+            ))
+        self.env.tb_other_periodogram.data=old_data.data
+        #self.env.tb_other_periodogram.selected = list([])
+        self.update_plot(0, 0, 0)
+
 
 
     def initialize_dnu_periodogram(self):
@@ -139,7 +202,7 @@ class Interactive(Environment):
         period = lk_prd_module.Periodogram(f, p)
 
         self.periodogram = period
-        self.env.minimum_frequency = 200  # 1
+        self.env.minimum_frequency = 1  # 1
         self.env.maximum_frequency = 800  # 8000
         self.env.maxdnu = 50
         self.env.dnu_val = 24.8
@@ -153,8 +216,8 @@ class Interactive(Environment):
 
         # Intialize other periodgram
         fig_other_periodogram = figure(
-            plot_width=self.env.plot_width,
-            plot_height=self.env.plot_height,
+            plot_width=1400,
+            plot_height=600,
             tools=["box_zoom", "wheel_zoom",
                    "lasso_select", "tap", "reset", "save"],
             title="Other Periodogram", tooltips=self.env.TOOLTIPS,
@@ -180,13 +243,19 @@ class Interactive(Environment):
 
         fig_other_periodogram.ray(
             y="other_prd_cuttoff",
-            x=0,
+            x="minimum_frequency",
             source=self.tb_constants_val,
-            name='selection_line',
-            length=3000,
+            name='threshold_line',
+            length=8000,
             angle=0,
             color='red'
         )
+
+
+
+
+
+        
 
         # fig_other_periodogram.circle("freq_values","power_values",
         #                             source=self.env.tb_grid_source,
@@ -196,10 +265,38 @@ class Interactive(Environment):
         #                             source=self.env.tb_grid_source,
         #                             alpha=0.7,color="#1F77B4")
 
-        fig_other_periodogram.x_range.start = 200
-        fig_other_periodogram.x_range.end = 800
+        #fig_other_periodogram.x_range.start = int(self.env.minimum_frequency)
+        #fig_other_periodogram.x_range.end = int(self.env.maximum_frequency)
+
+        #fig_other_periodogram.x_range.start = 200
+        #fig_other_periodogram.x_range.end = 800
 
         return tb_other_periodogram, fig_other_periodogram
+
+    def plot_vertical_lines(self):
+
+
+        color_map = self.mode_color_map
+        color_mapper = CategoricalColorMapper(
+            factors=list(color_map.keys()), 
+            palette=list(color_map.values()))
+
+        # Reversed
+        self.env.fig_other_periodogram.ray(x="Frequency",
+                                           y=-300,
+                        source= self.tb_se_second_source,
+                        length=300, 
+                        angle=np.pi/2,
+                        color={'field': 'Mode', 
+                                                'transform': color_mapper})
+
+        self.env.fig_other_periodogram.ray(x="Frequency",y=0,
+                        source= self.tb_se_second_source,
+                        length=2137, 
+                        angle=np.pi/2,
+                        color={'field': 'Mode', 
+                                                'transform': color_mapper})
+
 
     def make_tb_echelle_diagram(self):
         '''
@@ -228,9 +325,11 @@ class Interactive(Environment):
             self.env.frequency_unit
         power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
         (ep, self.x_echelle, self.y_echelle, y_original,self.xx, self.yy, 
-         self.freq_values, self.power_values) = self._clean_echelle(deltanu=self.dnu_val,
-                            minimum_frequency = self.env.minimum_frequency*self.env.frequency_unit,
-                            maximum_frequency = self.env.maximum_frequency*self.env.frequency_unit)
+         self.freq_values, self.power_values) = self._clean_echelle(
+                            deltanu=self.dnu_val,
+                            #minimum_frequency = self.env.minimum_frequency*self.env.frequency_unit,
+                            #maximum_frequency = self.env.maximum_frequency*self.env.frequency_unit
+                            )
 
         x_f = self.x_echelle
         y_f = self.y_echelle
@@ -289,7 +388,7 @@ class Interactive(Environment):
             width=300,
             height=300,
             sortable=True,
-            selectable=True,
+            selectable="checkbox",
             editable=True,
         )
 
@@ -457,9 +556,17 @@ class Interactive(Environment):
 
 
 
-        val = float(self.env.echelle_noise_cuttoff_text.value)
-        self.tb_constants_val.data['other_prd_cuttoff'] = list([val])
-        ind = np.array(self.power_values) >= val
+        cutt_off = float(self.env.echelle_noise_cuttoff_text.value)
+        self.tb_constants_val.data['other_prd_cuttoff'] = list([cutt_off])
+        
+        val = float(self.env.frequency_minimum_text.value)
+        self.tb_constants_val.data['minimum_frequency'] = list([val])
+        print('Threshold', val)
+
+        # self.freq_values = self.env.tb_grid_source.data['freq_values']
+        # self.power_values = self.env.tb_grid_source.data['power_values']
+
+        ind = np.array(self.power_values) >= cutt_off
         xx = np.array(self.xx)[ind]
         yy = np.array(self.yy)[ind]
         ff = np.array(self.freq_values)[ind]
@@ -498,10 +605,19 @@ class Interactive(Environment):
         Test function: Read fits file and get f and p"
         '''
 
-        print('Running read fits')
+        id_mycatalog=self.env.tb_source.data['id_mycatalog'][0]
+        self.id_mycatalog = id_mycatalog
+        filename=mycatalog.filename(
+            id_mycatalog=id_mycatalog,
+            name='other_psd')
+
+        print('Running read fits',filename)
         from astropy.io import fits
         import pandas
-        with fits.open('/Users/dp275303/work/tessipack_developement_test/PSD_003429205_no_gap.fits') as data:
+        with fits.open(
+            #'/Users/dp275303/work/tessipack_developement_test/PSD_ _no_gap.fits'
+            filename
+            ) as data:
             df = pandas.DataFrame(data[0].data)
 
         ff = df[0].values
@@ -521,9 +637,22 @@ class Interactive(Environment):
 
         print('Values transfering', self.env.minimum_frequency,
               self.env.maximum_frequency, self.env.maxdnu)
+        
+        #print('range', self.env.fig_other_periodogram.x_range.end)
+
+        #print(self.env.fig_other_periodogram.x_range.end)
         self.update_plot(0, 0, 0)
+        #self.env.fig_other_periodogram.x_range.start = int(self.env.minimum_frequency)
+        #self.env.fig_other_periodogram.x_range.end = int(self.env.maximum_frequency)
+        start = int(self.env.minimum_frequency)
+        end = int(self.env.maximum_frequency)
+       
+        #self.env.fig_other_periodogram.x_range=(start, end)
+        #print(self.env.fig_other_periodogram.x_range.end)
 
     def update_plot(self, attr, old, new):
+        
+        self.trim_frequency()
 
         self.id_mycatalog = self.env.tb_source.data['id_mycatalog'][0]
         dnu = self.dnu_val
@@ -536,12 +665,23 @@ class Interactive(Environment):
         lo, hi = np.nanpercentile(ep.value, [0.1, 99.9])
         vlo, vhi = 0.3 * lo, 1.7 * hi
         vstep = (lo - hi)/500
-        color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
+         
+        self.palette = getattr(bokeh.palettes, 
+                               self.env.select_color_palette.value)[9]
 
+        if self.env.check_reverse_color_palette.active[0]!=1:
+            self.palette = list(reversed(self.palette))
+            
+
+        color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
         self.env.fig_tpfint.select(
             'img').glyph.color_mapper.low = color_mapper.low
         self.env.fig_tpfint.select(
             'img').glyph.color_mapper.high = color_mapper.high
+        
+        self.env.fig_tpfint.select(
+            'img').glyph.color_mapper.palette = getattr(color_mapper,'palette')
+        
         self.env.stretch_sliderint.start = vlo
         self.env.stretch_sliderint.end = vhi
         self.env.stretch_sliderint.value = (lo, hi)
@@ -621,109 +761,110 @@ class Interactive(Environment):
         y_f : np.ndarray
             frequencies for Y axis
         """
-        if (minimum_frequency is None) & (maximum_frequency is None):
-            numax = self._validate_numax(numax)
+        # if (minimum_frequency is None) & (maximum_frequency is None):
+        #     numax = self._validate_numax(numax)
         deltanu = self._validate_deltanu(deltanu)
 
-        if (not hasattr(numax, 'unit')) & (numax is not None):
-            numax = numax * self.periodogram.frequency.unit
-        if (not hasattr(deltanu, 'unit')) & (deltanu is not None):
-            deltanu = deltanu * self.periodogram.frequency.unit
+        # if (not hasattr(numax, 'unit')) & (numax is not None):
+        #     numax = numax * self.periodogram.frequency.unit
+        # if (not hasattr(deltanu, 'unit')) & (deltanu is not None):
+        #     deltanu = deltanu * self.periodogram.frequency.unit
+        deltanu = deltanu * self.periodogram.frequency.unit
 
-        freq = self.env.tb_other_periodogram.data['frequency'] * \
-            self.env.frequency_unit
-        power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
+        # freq = self.env.tb_other_periodogram.data['frequency'] * \
+        #     self.env.frequency_unit
+        # power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
 
-        fmin = freq[0]
-        fmax = freq[-1]
+        # fmin = freq[0]
+        # fmax = freq[-1]
 
-        # Check for any superfluous input
-        if (numax is not None) & (any([a is not None for a in [minimum_frequency, maximum_frequency]])):
-            warnings.warn("You have passed both a numax and a frequency limit. "
-                          "The frequency limit will override the numax input.",
-                          LightkurveWarning)
+        # # Check for any superfluous input
+        # if (numax is not None) & (any([a is not None for a in [minimum_frequency, maximum_frequency]])):
+        #     warnings.warn("You have passed both a numax and a frequency limit. "
+        #                   "The frequency limit will override the numax input.",
+        #                   LightkurveWarning)
 
-        # Ensure input numax is in the correct units (if there is one)
-        if numax is not None:
-            numax = u.Quantity(numax, freq.unit).value
-            if numax > freq[-1].value:
-                raise ValueError("You can't pass in a numax outside the"
-                                 "frequency range of the periodogram.")
+        # # Ensure input numax is in the correct units (if there is one)
+        # if numax is not None:
+        #     numax = u.Quantity(numax, freq.unit).value
+        #     if numax > freq[-1].value:
+        #         raise ValueError("You can't pass in a numax outside the"
+        #                          "frequency range of the periodogram.")
 
-            fwhm = utils.get_fwhm(self.periodogram, numax)
+        #     fwhm = utils.get_fwhm(self.periodogram, numax)
 
-            fmin = numax - 2*fwhm
-            if fmin < freq[0].value:
-                fmin = freq[0].value
+        #     fmin = numax - 2*fwhm
+        #     if fmin < freq[0].value:
+        #         fmin = freq[0].value
 
-            fmax = numax + 2*fwhm
-            if fmax > freq[-1].value:
-                fmax = freq[-1].value
+        #     fmax = numax + 2*fwhm
+        #     if fmax > freq[-1].value:
+        #         fmax = freq[-1].value
 
-        # Set limits and set them in the right units
-        if minimum_frequency is not None:
-            fmin = u.Quantity(minimum_frequency, freq.unit).value
-            if fmin > freq[-1].value:
-                raise ValueError('Fmin', fmin, "You can't pass in a limit outside the "
-                                 "frequency range of the periodogram.")
+        # # Set limits and set them in the right units
+        # if minimum_frequency is not None:
+        #     fmin = u.Quantity(minimum_frequency, freq.unit).value
+        #     if fmin > freq[-1].value:
+        #         raise ValueError('Fmin', fmin, "You can't pass in a limit outside the "
+        #                          "frequency range of the periodogram.")
 
-        if maximum_frequency is not None:
-            fmax = u.Quantity(maximum_frequency, freq.unit).value
-            if fmax > freq[-1].value:
-                raise ValueError('Fmax', fmax, "You can't pass in a limit outside the "
-                                 "frequency range of the periodogram.")
+        # if maximum_frequency is not None:
+        #     fmax = u.Quantity(maximum_frequency, freq.unit).value
+        #     if fmax > freq[-1].value:
+        #         raise ValueError('Fmax', fmax, "You can't pass in a limit outside the "
+        #                          "frequency range of the periodogram.")
 
-        # Make sure fmin and fmax are Quantities or code below will break
-        fmin = u.Quantity(fmin, freq.unit)
-        fmax = u.Quantity(fmax, freq.unit)
+        # # Make sure fmin and fmax are Quantities or code below will break
+        # fmin = u.Quantity(fmin, freq.unit)
+        # fmax = u.Quantity(fmax, freq.unit)
 
-        # Add on 1x deltanu so we don't miss off any important range due to rounding
-        if fmax < freq[-1] - 1.5*deltanu:
-            fmax += deltanu
+        # # Add on 1x deltanu so we don't miss off any important range due to rounding
+        # if fmax < freq[-1] - 1.5*deltanu:
+        #     fmax += deltanu
 
-        fs = np.median(np.diff(freq))
-        x0 = int(freq[0] / fs)
+        # fs = np.median(np.diff(freq))
+        # x0 = int(freq[0] / fs)
 
-        ff = freq[int(fmin/fs)-x0:int(fmax/fs)-x0]  # Selected frequency range
-        pp = power[int(fmin/fs)-x0:int(fmax/fs)-x0]  # Power range
+        # ff = freq[int(fmin/fs)-x0:int(fmax/fs)-x0]  # Selected frequency range
+        # pp = power[int(fmin/fs)-x0:int(fmax/fs)-x0]  # Power range
 
-        # Reshape the power into n_rows of n_columns
-        # When modulus ~ zero, deltanu divides into frequency without remainder
-        mod_zeros = find_peaks(-1.0*(ff % deltanu))[0]
+        # # Reshape the power into n_rows of n_columns
+        # # When modulus ~ zero, deltanu divides into frequency without remainder
+        # mod_zeros = find_peaks(-1.0*(ff % deltanu))[0]
 
-        # The bottom left corner of the plot is the lowest frequency that
-        # divides into deltanu with almost zero remainder
-        start = mod_zeros[0]
+        # # The bottom left corner of the plot is the lowest frequency that
+        # # divides into deltanu with almost zero remainder
+        # start = mod_zeros[0]
 
-        # The top left corner of the plot is the highest frequency that
-        # divides into deltanu with almost zero remainder.  This index is the
-        # approximate end, because we fix an integer number of rows and columns
-        approx_end = mod_zeros[-1]
+        # # The top left corner of the plot is the highest frequency that
+        # # divides into deltanu with almost zero remainder.  This index is the
+        # # approximate end, because we fix an integer number of rows and columns
+        # approx_end = mod_zeros[-1]
 
-        # The number of rows is the number of times you can partition your
-        # frequency range into chunks of size deltanu, start and ending at
-        # frequencies that divide nearly evenly into deltanu
-        n_rows = len(mod_zeros) - 1
+        # # The number of rows is the number of times you can partition your
+        # # frequency range into chunks of size deltanu, start and ending at
+        # # frequencies that divide nearly evenly into deltanu
+        # n_rows = len(mod_zeros) - 1
 
-        # The number of columns is the total number of frequency points divided
-        # by the number of rows, floor divided to the nearest integer value
-        n_columns = int((approx_end - start) / n_rows)
+        # # The number of columns is the total number of frequency points divided
+        # # by the number of rows, floor divided to the nearest integer value
+        # n_columns = int((approx_end - start) / n_rows)
 
-        # The exact end point is therefore the ncolumns*nrows away from the start
-        end = start + n_columns*n_rows
+        # # The exact end point is therefore the ncolumns*nrows away from the start
+        # end = start + n_columns*n_rows
 
-        ep = np.reshape(pp[start: end], (n_rows, n_columns))
+        # ep = np.reshape(pp[start: end], (n_rows, n_columns))
 
-        if scale == 'log':
-            ep = np.log10(ep)
+        # if scale == 'log':
+        #     ep = np.log10(ep)
 
-        # Reshape the freq into n_rowss of n_columnss & create arays
-        ef = np.reshape(ff[start: end], (n_rows, n_columns))
-        x_f = ((ef[0, :]-ef[0, 0]) % deltanu)
-        # Test : Scaling
-        x_f = ((ef[0, :]) % deltanu)
-        # print('x_f max',x_f.max(),deltanu)
-        y_f = (ef[:, 0])
+        # # Reshape the freq into n_rowss of n_columnss & create arays
+        # ef = np.reshape(ff[start: end], (n_rows, n_columns))
+        # x_f = ((ef[0, :]-ef[0, 0]) % deltanu)
+        # # Test : Scaling
+        # x_f = ((ef[0, :]) % deltanu)
+        # # print('x_f max',x_f.max(),deltanu)
+        # y_f = (ef[:, 0])
 
         freq = self.env.tb_other_periodogram.data['frequency']
         power = self.env.tb_other_periodogram.data['power']
@@ -732,8 +873,8 @@ class Interactive(Environment):
         data_frame['freq'] = freq
         data_frame['power'] = power
 
-        minf = minimum_frequency.value
-        maxf = maximum_frequency.value
+        minf = int(self.env.minimum_frequency)
+        maxf = int(self.env.maximum_frequency)
         data_frame = data_frame.query('freq<@maxf & freq>@minf')
 
         ep, x_f, y_f, xx, yy, freq_values, power_values = self.apollinaire_echelle(
@@ -754,7 +895,7 @@ class Interactive(Environment):
         y_f = y_f*self.env.frequency_unit
         return ep, x_f, y_f, y_original, xx, yy, freq_values, power_values
 
-    def _make_echelle_elements(self, deltanu, cmap='viridis',
+    def _make_echelle_elements(self, deltanu, cmap='hot',
                                minimum_frequency=None, maximum_frequency=None, smooth_filter_width=None,
                                scale='linear', plot_width=490, plot_height=340, title='Echelle'):
         """
@@ -767,7 +908,7 @@ class Interactive(Environment):
         x_f = self.env.tb_echelle_diagram.data['x_f']*self.env.frequency_unit
         y_f = self.env.tb_echelle_diagram.data['y_f']*self.env.frequency_unit
 
-        fig = figure(plot_width=plot_width, plot_height=plot_height,
+        fig = figure(plot_width=800, plot_height=800,
                      # x_range=(0, 1), y_range=(y_f[0].value, y_f[-1].value),
                      title=title, tools='pan,box_zoom,reset,lasso_select',
                      toolbar_location="above",
@@ -920,7 +1061,7 @@ class Interactive(Environment):
 
         create_interact_ui()
 
-    def apollinaire_echelle(self, freq, PSD, dnu, twice=False, fig=None, index=111,
+    def apollinaire_echelle(self, freq, PSD, dnu, modes, twice=False, fig=None, index=111,
                             figsize=(16, 16), title=None,
                             smooth=10, cmap='cividis', cmap_scale='linear',
                             mode_freq=None, mode_freq_err=None,
@@ -1187,6 +1328,8 @@ class Interactive(Environment):
         if set(all_list) != set(se_indices):
             self.tb_grid_source.selected.indices = list(set(all_list))
             self.update_plot(0, 0, 0)
+        self.env.fig_other_periodogram.x_range.start = int(self.env.minimum_frequency)
+        self.env.fig_other_periodogram.x_range.end = int(self.env.maximum_frequency)
 
 
     def selection_grid_to_table_fig(self, attrname, old, new):
@@ -1204,11 +1347,11 @@ class Interactive(Environment):
                        'power_values':'Power'},
                        inplace=True,)
         df_grid = df_grid[['Slicefreq', 'Frequency', 'Power', 'Mode','xx']]
-
         all_data = pd.concat([df_table, df_grid],ignore_index=True)
         # print(all_data)
-        all_data = all_data.drop_duplicates('Frequency')
-        # print(all_data)
+        all_data['Frequency'] = all_data['Frequency'].round(self.env.freq_round)
+        all_data = all_data.drop_duplicates(subset=['Frequency'])
+        #print(all_data.to_dict())
         #old_data = ColumnDataSource.from_df(all_data)
         df=all_data
         old_data = ColumnDataSource(
@@ -1283,6 +1426,28 @@ class Interactive(Environment):
         if set(all_list) != set(self.env.tb_other_periodogram.selected.indices):
             self.env.tb_other_periodogram.selected.indices = list(set(all_list))
 
+
+    def selection_table2_to_prd_fig(self, attrname, old, new):
+        """
+        Table to prd selection
+        """
+
+        df_table = self.tb_se_second_source.to_df()
+        selected_freq = df_table['Frequency'].round(self.env.freq_round)
+        selected_freq = selected_freq.to_list()
+
+        df_prd = self.env.tb_other_periodogram.to_df()
+        df_prd['frequency'] = df_prd['frequency'].round(self.env.freq_round)  
+        df_prd = df_prd.query('frequency==@selected_freq')
+
+        all_list = self.env.tb_other_periodogram.selected.indices + df_prd.index.to_list()
+        
+        
+        if set(all_list) != set(self.env.tb_other_periodogram.selected.indices):
+            self.env.tb_other_periodogram.selected.indices = list(set(all_list))
+
+
+
     def get_all_selection_button(self):
         """
         Move selection around
@@ -1297,7 +1462,12 @@ class Interactive(Environment):
         # self.selection_table_to_prd_fig(0,0,0)
         # self.selection_prd_to_grid_fig(0,0,0)
         self.selection_grid_to_table_fig(0,0,0)
-
+        self.selection_table_to_prd_fig(0,0,0)
+        self.selection_prd_to_grid_fig(0,0,0)
+        
+        self.selection_grid_to_table_fig(0,0,0)
+        self.selection_table_to_prd_fig(0,0,0)
+        self.selection_prd_to_grid_fig(0,0,0)
 
     def clear_se_grid_prd(self):
         """
@@ -1313,21 +1483,44 @@ class Interactive(Environment):
         """
         Change mode selection
         """
-        self.clear_se_table1()
+        df_first=self.tb_se_first_source.to_df()
+        df_first['Frequency']=df_first['Frequency'].round(
+            self.env.freq_round)
+        list_freq = df_first['Frequency'].to_list()
+        
         print('Drop down value is', self.env.select_mode_menu.value)
-        ind = self.env.tb_grid_source.selected.indices
+        #ind = self.env.tb_grid_source.selected.indices 
+        
         df_grid = self.env.tb_grid_source.to_df()
+        df_grid['freq_values'] = df_grid['freq_values'].round(
+            self.env.freq_round)
+        ind = df_grid.query('freq_values == @list_freq').index
+
         df_grid.loc[ind,'Mode'] = self.env.select_mode_menu.value
         old_data = ColumnDataSource(df_grid.to_dict('list'))
         self.env.tb_grid_source.data = old_data.data
 
-        ind = self.env.tb_other_periodogram.selected.indices
+        #ind = self.env.tb_other_periodogram.selected.indices
+
         df_other = self.env.tb_other_periodogram.to_df()
+        df_other['frequency'] = df_other['frequency'].round(
+            self.env.freq_round)
+        ind = df_other.query('frequency == @list_freq').index
+
         df_other.loc[ind,'Mode'] = self.env.select_mode_menu.value
         old_data = ColumnDataSource(df_other.to_dict('list'))
         self.env.tb_other_periodogram.data = old_data.data
-
+        
+        self.clear_se_table1()
         self.get_all_selection_button()
+
+
+    # def get_index_from_frequency(self,df=None,name='Frequency',val_list=''):
+        
+    #     df['name']=df['name'].round(self.env.freq_round)
+
+
+
 
 
 
@@ -1359,6 +1552,9 @@ class Interactive(Environment):
         """
         Move frequencies from table 1 to table 2
         """
+        # self.selection_table2_to_prd_fig(0,0,0)
+        # self.selection_prd_to_grid_fig(0,0,0)
+        # self.selection_grid_to_table_fig(0,0,0)
 
         mode = self.env.select_mode_menu.value
         df_table2 = self.tb_se_second_source.to_df()
@@ -1367,16 +1563,39 @@ class Interactive(Environment):
         #df_table1_left = df_table1[~df_table1.index.isin(df_table1_se.index)]
         df_table2_left = df_table2.query('Mode != @mode')
         # print(df_table2_left.to_dict('list'))
+
         old_data = ColumnDataSource(df_table2_left.to_dict('list'))
         self.tb_se_second_source.data = old_data.data
         # Second table
         df_table1 = self.tb_se_first_source.to_df()
         #df_table1_se = df_table1.query('Mode == @mode')
-        all_data = pd.concat([df_table1, df_table2_se], ignore_index=True)
+        
+        selected_freq = list(np.round(df_table2_se.Frequency.values, self.env.freq_round))
+        df_grid = self.env.tb_grid_source.to_df()
+        df_grid['freq_values'] = df_grid['freq_values'].round(self.env.freq_round)
+        df_grid = df_grid.query('freq_values==@selected_freq')
+        df_grid.rename(columns={'yy':'Slicefreq', 
+                        'freq_values':'Frequency',
+                        'power_values':'Power'},
+                        inplace=True,)
+        
+        df_final = df_grid[['Slicefreq', 'Frequency', 'Power', 'Mode','xx']]
+        df_final['mode_color'] = '' 
+        
+        all_data = pd.concat([df_table1, df_final], ignore_index=True)
         all_data =all_data.drop('mode_color',axis=1)
+        print(all_data)
+        all_data = all_data.drop_duplicates(subset=['Frequency'],
+                                            ignore_index=True)
         #df_table2
+        print(all_data.to_dict('list'))
         old_data = ColumnDataSource(all_data.to_dict('list'))
         self.tb_se_first_source.data = old_data.data
+
+        #self.selection_table_to_prd_fig(0,0,0)
+        #self.selection_prd_to_grid_fig(0,0,0)
+        # self.selection_grid_to_table_fig(0,0,0)
+
 
     def assign_mode_color(self,modes):
         val=list(modes)
@@ -1387,11 +1606,106 @@ class Interactive(Environment):
         val = list(map(lambda x: x.replace('1', self.mode_color_map[1]), val))
         val = list(map(lambda x: x.replace('2', self.mode_color_map[2]), val))
         return val
+    
+    def trim_frequency(self):
 
+        ff, pp = self.read_fits_get_fp()
+        #mm = ['-1']*(len(pp))
+        
+        min_freq = int(self.env.minimum_frequency)*self.env.frequency_unit
+        max_freq = int(self.env.maximum_frequency)*self.env.frequency_unit
+        #print('minimum',min_freq,ff)
+        # ff = ff[(ff <= max_freq)]
+        # pp = pp[(ff <= max_freq)]
+        # print('maximum',max_freq,ff)
 
+        ff = (ff*u.Hz).to(self.env.frequency_unit).value
+        pp = pp*self.env.power_unit
+        pp = pp.value
+        
+        #print('F and P with unit',ff, pp)
+        
+        ind=(ff <= max_freq.value) & (ff >= min_freq.value)
 
+        f = ff[ind]
+        p = pp[ind]
+        f = f*self.env.frequency_unit
+        p = p*self.env.power_unit
+        mm = ['-1']*(len(p))
 
+        #self.env.minimum_frequency = f.min().value
+        #self.env.maximum_frequency = f.max().value
 
+        #print(f,p)
+        period = lk_prd_module.Periodogram(f, p)
+        self.periodogram = period
+
+        old_data= ColumnDataSource(
+            data=dict(
+                frequency=list(self.periodogram.frequency.value),
+                power=list(self.periodogram.power.value),
+                Mode = mm,
+                # cuttoff=list(np.array([0])),
+            ))  
+        self.env.tb_other_periodogram.data=old_data.data
+
+    def save_table_2(self):
+
+        df=self.tb_se_second_source.to_df()
+        filename=mycatalog.filename(
+            id_mycatalog=self.id_mycatalog,
+            name='other_psd_save_freq')
+        
+        print('Save Table 2 values',filename,self.tb_se_second_source.data)
+
+        df.to_csv(filename,index=False)
+        
+    def load_table(self):
+
+        filename=mycatalog.filename(
+            id_mycatalog=self.id_mycatalog,
+            name='other_psd_save_freq')
+        df = pd.read_csv(filename)
+        df['Mode']=df['Mode'].astype(str)
+        df['Frequency']=df['Frequency'].astype(float)
+        df['Frequency']=df['Frequency'].astype(float)
+        #print(df)    
+        old_data = ColumnDataSource(df.to_dict('list'))
+
+        self.tb_se_second_source.data = old_data.data
+        print('Load saved Table 2 values',
+              filename,
+              self.tb_se_second_source.data)
+
+        #df['Freq']
+        
+        df_second=self.tb_se_second_source.to_df()
+        df_second['Frequency']=df_second['Frequency'].round(
+            self.env.freq_round)
+        list_freq = df_second['Frequency'].to_list()
+
+        for mode in df_second.Mode.unique():
+
+            
+            df_grid = self.env.tb_grid_source.to_df()
+            df_grid['freq_values'] = df_grid['freq_values'].round(
+                self.env.freq_round)
+            ind = df_grid.query('freq_values == @list_freq').index
+
+            df_grid.loc[ind,'Mode'] = mode
+            old_data = ColumnDataSource(df_grid.to_dict('list'))
+            self.env.tb_grid_source.data = old_data.data
+
+            #ind = self.env.tb_other_periodogram.selected.indices
+
+            df_other = self.env.tb_other_periodogram.to_df()
+            df_other['frequency'] = df_other['frequency'].round(
+                self.env.freq_round)
+            ind = df_other.query('frequency == @list_freq').index
+
+            df_other.loc[ind,'Mode'] = mode
+            old_data = ColumnDataSource(df_other.to_dict('list'))
+            self.env.tb_other_periodogram.data = old_data.data
         
 
     

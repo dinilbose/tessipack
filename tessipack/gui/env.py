@@ -9,7 +9,7 @@ class Environment(object):
     '''
     # ---------------------------Light Curve Param----------------------------- #
 
-    default_cluster = "star"
+    default_cluster = "mode_selection"
     sigma = 5
     plot_nearby = -1  # set this to 1 and -1 to toggle plotting of nearby source
     draw_nearby_names = 1
@@ -278,6 +278,37 @@ class Environment(object):
     move_se_1_2_button = None
     move_se_2_1_button = None
     tb_other_source = None
+    save_table_2_button = None
+    load_table_2_button = None
+
+    select_color_palette = None
+    check_reverse_color_palette = None
+    default_color_palette = "Greys"
+    color_palette_options = [
+        "Spectral",
+        "RdBu",
+        "PiYG",
+        "PRGn",
+        "RdYlBu",
+        "RdGy",
+        "PuOr",
+        "Greens",
+        "Blues",
+        "Purples",
+        "Oranges",
+        "Reds",
+        "Greys",
+        "YlOrBr",
+        "YlGnBu",
+        "YlGn",
+    ]
+
+
+
+
+
+
+
 
 
     # update_all=None

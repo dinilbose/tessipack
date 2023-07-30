@@ -625,7 +625,9 @@ class Aperture(Environment):
         # print(self.env.tb_source.data["id"])
         self.env.tb_source.data["id"][0]=int(self.env.tb_source.data["id"][0])+1
         id=self.env.tb_source.data["id"][0]
+        print('All_data', self.env.tb_source.data["id_mycatalog_all"])
         self.env.tb_source.data["id_mycatalog"][0]=self.env.tb_source.data["id_mycatalog_all"][id]
+        
         self.id_mycatalog=self.env.tb_source.data["id_mycatalog"][0]
         print(self.env.tb_source.data["id_mycatalog"][0],self.id_mycatalog)
 

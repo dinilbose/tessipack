@@ -18,6 +18,7 @@ from tessipack.functions import aperture
 from pathlib import Path
 import os
 import ast
+from bokeh.layouts import row,column
 
 class Catalog(Environment):
     env=Environment
@@ -112,8 +113,133 @@ class Catalog(Environment):
         self.env.text_banner_bp_rp = Paragraph(text='', width=1000, height=10)
         self.env.text_banner_dmin= Paragraph(text='', width=1000, height=10)
 
+
+        self.env.next_button = Button(label="Next Source", button_type="success",width=150)
+        self.env.next_button.on_click(self.next)
+        self.env.previous_button = Button(label="Previous Source", button_type="success",width=150)
+        self.env.previous_button.on_click(self.previous)
+        self.env.save_userinput_button = Button(label="Save User Input", button_type="success",width=100)
+        self.env.save_userinput_button.on_click(self.save_userinput)
+        self.env.text_banner = Paragraph(text=self.env.Message, width=1100, height=30)
+
+
         self.draw_hr_diagram()
         self.initiate_isochrone()
+        self.text_format()
+        self.initiate_userinput()
+
+
+    def update_all(self,attrname, old, new):
+        # print('aperutre_function')
+        self.env.tb_source.data["id"][0]=int(self.env.tb_source.data["id"][0])
+        id=self.env.tb_source.data["id"][0]
+        self.env.tb_source.data["id_mycatalog"][0]=self.env.tb_source.data["id_mycatalog_all"][id]
+        self.id_mycatalog=self.env.tb_source.data["id_mycatalog"][0]
+        print(self.env.tb_source.data["id_mycatalog"][0],self.id_mycatalog)
+
+
+        self.text_format()
+        self.env.text_banner.text=self.env.Message
+        self.update_format()
+        self.env.text_id_mycatalog_query.value=str(self.id_mycatalog)
+        self.env.text_id_query.value=str(self.env.tb_source.data["id"][0])
+        self.env.tb_catalog_all.selected.indices=[id]
+#        self.update_tb_nearby_star()
+
+#        self.env.catalog_find_from_isocrhone()
+        print('Ready')
+
+    def update_format(self):
+        '''Update'''
+        self.env.text_banner.text=self.env.Message
+        self.env.text_flag_source.value=str(self.env.v_flag_source)
+        self.env.text_flag_check.value=str(self.env.v_flag_check)
+        self.env.text_flag_duplicate.value=str(self.env.v_flag_duplicate)
+        self.env.text_Notes.value=str(self.env.v_text_Notes)
+
+
+
+    def initiate_userinput(self):
+        self.env.text_flag_duplicate = TextInput(value=str(self.env.v_flag_duplicate), title="Flag duplicate",height=50)
+        self.env.text_flag_source = TextInput(value=str(self.env.v_flag_source), title="Flag source",height=50)
+        self.env.text_flag_check = TextInput(value=str(self.env.v_flag_check), title="Flag check",height=50)
+
+        self.env.text_Notes = TextInput(value=str(self.env.v_text_Notes), title="",height=70,width=1500,align='start')
+        title_ = Paragraph(text='Notes', align='center')
+        self.env.text_Notes_w = row([title_, self.env.text_Notes])
+
+
+
+    def text_format(self):
+        '''Format text for display'''
+        data=mycatalog.pointer(catalog='mycatalog',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
+        # apogee=mycatalog.pointer(catalog='apogee',id_mycatalog=self.env.tb_source.data["id_mycatalog"][0])
+        apogee=pd.DataFrame()
+        Gmag=str(data['Gmag'].values[0])
+        bp_rp=str(data['bp_rp'].values[0])
+        PMemb=str(data['PMemb'].values[0])
+        id_apogee=str(data['id_apogee'].values[0])
+        name=str(data['id_mycatalog'].values[0])
+        print(name)
+
+        if apogee.empty:
+            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb+ ' id_apogee:'+id_apogee
+
+        else:
+            apogee_teff=str(apogee['Teff'].values[0])
+            apogee_Fe_H=str(apogee['[Fe/H]'].values[0])
+            apogee_logg=str(apogee['logg'].values[0])
+            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb+ ' id_apogee:'+id_apogee+' apogee_teff:'+apogee_teff+' apogee_Fe_H:'+apogee_Fe_H+' apogee_logg:'+apogee_logg
+
+        self.env.v_flag_duplicate=data['flag_duplicate'].values[0]
+        self.env.v_flag_source=data['flag_source'].values[0]
+        self.env.v_flag_check=data['flag_check'].values[0]
+        self.env.v_text_Notes=data['Notes'].values[0]
+
+
+
+
+    def save_userinput(self):
+        id_mycatalog=self.env.tb_source.data["id_mycatalog"][0]
+        mycatalog.update(id_mycatalog=id_mycatalog,flag_source=self.env.text_flag_source.value)
+        mycatalog.update(id_mycatalog=id_mycatalog,flag_check=self.env.text_flag_check.value)
+        mycatalog.update(id_mycatalog=id_mycatalog,flag_duplicate=self.env.text_flag_duplicate.value)
+        mycatalog.update(id_mycatalog=id_mycatalog,Notes=self.env.text_Notes.value)
+
+
+    def next(self):
+        # print(self.env.tb_source.data["id"])
+        self.env.tb_source.data["id"][0]=int(self.env.tb_source.data["id"][0])+1
+        id=self.env.tb_source.data["id"][0]
+        print('All_data', self.env.tb_source.data["id_mycatalog_all"])
+        self.env.tb_source.data["id_mycatalog"][0]=self.env.tb_source.data["id_mycatalog_all"][id]
+        
+        self.id_mycatalog=self.env.tb_source.data["id_mycatalog"][0]
+        print(self.env.tb_source.data["id_mycatalog"][0],self.id_mycatalog)
+
+        mydata=mycatalog.pointer(id_mycatalog=self.id_mycatalog)
+        sector_list=ast.literal_eval(mydata.Sector.values[0])
+        sector_list=list([str(i) for i in sector_list])
+        self.env.sector=sector_list[0]
+        self.update_all(0,0,0)
+
+    def previous(self):
+        # print(self.env.tb_source.data["id"])
+        self.env.tb_source.data["id"][0]=int(self.env.tb_source.data["id"][0])-1
+        id=self.env.tb_source.data["id"][0]
+        self.env.tb_source.data["id_mycatalog"][0]=self.env.tb_source.data["id_mycatalog_all"][id]
+        self.id_mycatalog=self.env.tb_source.data["id_mycatalog"][0]
+        self.update_all(0,0,0)
+
+    def initiate_userinput(self):
+        self.env.text_flag_duplicate = TextInput(value=str(self.env.v_flag_duplicate), title="Flag duplicate",height=50)
+        self.env.text_flag_source = TextInput(value=str(self.env.v_flag_source), title="Flag source",height=50)
+        self.env.text_flag_check = TextInput(value=str(self.env.v_flag_check), title="Flag check",height=50)
+
+        self.env.text_Notes = TextInput(value=str(self.env.v_text_Notes), title="",height=70,width=1500,align='start')
+        title_ = Paragraph(text='Notes', align='center')
+        self.env.text_Notes_w = row([title_, self.env.text_Notes])
+
 
 
     def update_catalog(self):
@@ -130,7 +256,7 @@ class Catalog(Environment):
             self.catalog_all=self.env.catalog_main
 
         self.id_mycatalog_all=self.catalog_all.id_mycatalog
-        # print('newwwwwwwwwww',id_mycatalog_all)
+        print('newwwwwwwwwww',self.id_mycatalog_all)
         self.id_all=np.arange(0,len(self.catalog_all))
         self.id=0
         self.id_mycatalog=self.id_mycatalog_all[self.id]
@@ -145,6 +271,7 @@ class Catalog(Environment):
         sector_list=ast.literal_eval(mydata.Sector.values[0])
         sector_list=list([str(i) for i in sector_list])
         self.env.sector=sector_list[0]
+        
 
     def update_cluster(self):
         #self.catalog_all=mycatalog.pointer(catalog='mycatalog')
