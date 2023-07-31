@@ -89,7 +89,7 @@ class Environment(object):
                  #'nonselection_line_alpha': 0.7
                  'selection_fill_alpha': 1
                  }
-    selection = {}
+    #selection = {}
     selection_osc = {'line_color': "green",
                      'nonselection_line_color': "#1F77B4", 'nonselection_line_alpha': 1}
 
@@ -290,6 +290,14 @@ class Environment(object):
     load_table_2_button = None
     inverted_slider = None
     select_color_palette = None
+    grid_circle_size = None
+    clear_se_table2_button= None
+
+
+    check_show_horizontal_lines = None
+    check_make_grid  = None
+    check_show_echelle = None
+    check_show_modes_grid = None
     check_reverse_color_palette = None
     default_color_palette = "Greys"
     color_palette_options = [
@@ -309,6 +317,11 @@ class Environment(object):
         "YlOrBr",
         "YlGnBu",
         "YlGn",
+        "Plasma",
+        "Magma", 
+        "Inferno", 
+        "Viridis",
+        "Cividis"
     ]
 
 

@@ -57,8 +57,9 @@ class Interactive(Environment):
         self.mode_color_map = {
                     '999': "grey",
                     '0': "red",
-                    '1': "green",
+                    '1': "magenta",
                     '2': "blue",
+                    '3': "green",
                     }
 
         self.tb_constants_val = ColumnDataSource(
@@ -92,7 +93,7 @@ class Interactive(Environment):
         self.env.update_int_button.on_click(self.update_value)
         
         self.env.select_mode_menu = Select(title='Mode Select', 
-                                         options=['999','0','1','2'], 
+                                         options=['999','0','1','2','3','4','-1','-2'], 
                                          value='999',width=150)
         self.env.mode_apply_button = Button(
                                         label="Select Mode", 
@@ -100,16 +101,16 @@ class Interactive(Environment):
         self.env.mode_apply_button.on_click(self.click_mode_apply_button)
 
         self.env.move_se_1_2_button = Button(
-                                        label="Move 1 -> 2", 
+                                        label="Move Tab1 -> Tab2", 
                                         button_type="success", width=150)
         self.env.move_se_1_2_button.on_click(self.click_move_se_1_2_button)
         self.env.move_se_2_1_button = Button(
-                                        label="Move 2 -> 1", 
+                                        label="Move Tab2 -> Tab1", 
                                         button_type="success", width=150)
         self.env.move_se_2_1_button.on_click(self.click_move_se_2_1_button)
 
         self.env.save_table_2_button = Button(
-                                        label="Save Table 2", 
+                                        label="Save Tab2", 
                                         button_type="success", width=150)
         self.env.save_table_2_button.on_click(self.save_table_2)
 
@@ -118,7 +119,8 @@ class Interactive(Environment):
                                         button_type="success", width=150)
         self.env.load_table_2_button.on_click(self.load_table)
 
-
+        self.env.grid_circle_size = TextInput(
+            value=str(2), title="Circle Size", width=80)
 
 
         self.env.select_color_palette = Select(title='Color Palette', 
@@ -132,16 +134,42 @@ class Interactive(Environment):
                                                             height=10,
                                                             width=10)
 
+        self.env.check_make_grid = CheckboxGroup(
+                                                labels=['Make Grid'],
+                                                active=[0,1],
+                                                height=10,
+                                                width=100,
+                                                )
+        
+        self.env.check_show_echelle = CheckboxGroup(
+                                                labels=['Show Echelle'],
+                                                active=[0,1],
+                                                height=10,
+                                                width=100,
+                                                )
 
+        self.env.check_show_horizontal_lines = CheckboxGroup(
+                                                labels=['Show lines'],
+                                                active=[0,1],
+                                                height=10,
+                                                width=100,
+                                                )
+
+
+        self.env.check_show_modes_grid = CheckboxGroup(
+                                        labels=['Show Modes Only'],
+                                        active=[1],
+                                        height=10,
+                                        width=100,
+                                        )
 
         self.initialize_selection_tables()
-
         self.make_tb_echelle_diagram()
         self.interact_echelle()
         self.make_grid()
 
         self.env.test_button = Button(
-            label="Test", button_type="success", width=150)
+            label="Get Selection", button_type="success", width=150)
         self.env.test_button.on_click(self.get_all_selection_button)
         
         self.env.clear_se_grid_prd_button = Button(
@@ -151,7 +179,11 @@ class Interactive(Environment):
         self.env.clear_se_table1_button = Button(
             label="Clear Table 1", button_type="success", width=150)
         self.env.clear_se_table1_button.on_click(self.clear_se_table1)
-        
+
+        self.env.clear_se_table2_button = Button(
+            label="Clear Table 1", button_type="success", width=150)
+        self.env.clear_se_table2_button.on_click(self.clear_se_table2)
+
         self.env.find_peaks_button = Button(
             label="Find Peak", button_type="success", width=150)
         self.env.find_peaks_button.on_click(self.find_peak_frequencies)
@@ -160,35 +192,31 @@ class Interactive(Environment):
 
         self.plot_vertical_lines()
         self.inverted_slider()
-        self.old_frequency_min = self.env.minimum_frequency
-        self.old_frequency_max = self.env.maximum_frequency
+        self.old_frequency_min = 0
+        self.old_frequency_max = 0
 
 
 
 
     def update_source(self,attr,old,new):
-        ff, pp = self.read_fits_get_fp()
-        mm = ['999']*(len(pp))
+        # ff, pp = self.read_fits_get_fp()
+        # mm = ['999']*(len(pp))
+        # f = (ff*u.Hz).to(self.env.frequency_unit)
+        # p = pp*self.env.power_unit
+        # period = lk_prd_module.Periodogram(f, p)
+        # self.periodogram = period
+        # old_data= ColumnDataSource(
+        #     data=dict(
+        #         frequency=list(self.periodogram.frequency.value),
+        #         power=list(self.periodogram.power.value),
+        #         Mode = mm,
+        #     ))
+        
+        self.trim_frequency()
 
-
-        f = (ff*u.Hz).to(self.env.frequency_unit)
-        p = pp*self.env.power_unit
-        period = lk_prd_module.Periodogram(f, p)
-
-        self.periodogram = period
-        # self.env.minimum_frequency =   # 1
-        # self.env.maximum_frequency =   # 8000
-        # self.env.maxdnu = 50
-        # self.env.dnu_val = 24.8
-        old_data= ColumnDataSource(
-            data=dict(
-                frequency=list(self.periodogram.frequency.value),
-                power=list(self.periodogram.power.value),
-                Mode = mm,
-                # cuttoff=list(np.array([0])),
-            ))
         self.env.tb_other_periodogram.data=old_data.data
-        #self.env.tb_other_periodogram.selected = list([])
+        self.clear_se_table1()
+        self.clear_se_table2()
         self.update_plot(0, 0, 0)
 
 
@@ -290,6 +318,7 @@ class Interactive(Environment):
                         length=2137, 
                         angle=np.pi/2,
                         legend_field='Mode',
+                        name='vertical_line',
                         color={'field': 'Mode', 
                                                 'transform': color_mapper})
 
@@ -316,40 +345,57 @@ class Interactive(Environment):
         else:
             print('Refereshing everything')
 
+        if self.env.check_show_echelle.active[0]==0:
         # Load the values
-        frequency = self.env.tb_other_periodogram.data['frequency'] * \
-            self.env.frequency_unit
-        power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
-        (ep, self.x_echelle, self.y_echelle, y_original,self.xx, self.yy, 
-         self.freq_values, self.power_values) = self._clean_echelle(
-                            deltanu=self.dnu_val,
-                            #minimum_frequency = self.env.minimum_frequency*self.env.frequency_unit,
-                            #maximum_frequency = self.env.maximum_frequency*self.env.frequency_unit
-                            )
+            frequency = self.env.tb_other_periodogram.data['frequency'] * \
+                self.env.frequency_unit
+            power = self.env.tb_other_periodogram.data['power']*self.env.power_unit
+            (ep, self.x_echelle, self.y_echelle, y_original,self.xx, self.yy, 
+            self.freq_values, self.power_values) = self._clean_echelle(
+                                deltanu=self.dnu_val,
+                                #minimum_frequency = self.env.minimum_frequency*self.env.frequency_unit,
+                                #maximum_frequency = self.env.maximum_frequency*self.env.frequency_unit
+                                )
 
-        x_f = self.x_echelle
-        y_f = self.y_echelle
-        dw = (x_f.flatten().max() - x_f.flatten().min()).value
-        dh = (y_f.flatten().max() - y_f.flatten().min()).value
-        xmin = x_f.flatten().min().value
-        ymin = y_f.flatten().min().value
+            x_f = self.x_echelle
+            y_f = self.y_echelle
+            dw = (x_f.flatten().max() - x_f.flatten().min()).value
+            dh = (y_f.flatten().max() - y_f.flatten().min()).value
+            xmin = x_f.flatten().min().value
+            ymin = y_f.flatten().min().value
 
-        new_data = ColumnDataSource(
-            data=dict(image=[ep.value],
-                      x_f=[x_f.value],
-                      y_f=[y_f.value],
-                      dw=[dw],
-                      dh=[dh],
-                      xmin=[xmin],
-                      ymin=[ymin],
-                      y_original=[y_original],
-                      # xx=[xx],
-                      # yy=[yy],
-                      # freq_values=[freq_values],
-                      )
-        )
+            new_data = ColumnDataSource(
+                data=dict(image=[ep.value],
+                        x_f=[x_f.value],
+                        y_f=[y_f.value],
+                        dw=[dw],
+                        dh=[dh],
+                        xmin=[xmin],
+                        ymin=[ymin],
+                        y_original=[y_original],
+                        # xx=[xx],
+                        # yy=[yy],
+                        # freq_values=[freq_values],
+                        )
+            )
 
-        self.env.tb_echelle_diagram.data = new_data.data
+            self.env.tb_echelle_diagram.data = new_data.data
+        else:
+            old_data = ColumnDataSource(
+                data=dict(image=[],
+                          x_f=[],
+                          y_f=[],
+                          dw=[],
+                          dh=[],
+                          xmin=[],
+                          ymin=[],
+                          y_original=[],  # value without
+                          # xx=[],
+                          # yy=[],
+                          # freq_values=[],
+                          ))
+            self.env.tb_echelle_diagram.data = old_data.data
+
 
     def initialize_selection_tables(self):
 
@@ -523,7 +569,8 @@ class Interactive(Environment):
                 self.env.fig_tpfint.circle(x = 'xx', 
                                         y = 'yy',
                                         size = 2, 
-                                        fill_alpha = 0.2, 
+                                        fill_alpha = 0.2,
+                                        name='grid_circle', 
                                         line_color = {'field': 'Mode', 
                                                 'transform': color_mapper}, 
                                         source=self.env.tb_grid_source,
@@ -550,54 +597,56 @@ class Interactive(Environment):
                 #                            color = {'field': 'Mode', 
                 #                                   'transform': color_mapper}, 
                 #                            source=self.env.tb_grid_source)
+                
+        #print('Griding',self.env.check_make_grid.active)
+        if self.env.check_make_grid.active[0]==0:
+            cutt_off = float(self.env.echelle_noise_cuttoff_text.value)
+            self.tb_constants_val.data['other_prd_cuttoff'] = list([cutt_off])
+            
+            val = float(self.env.frequency_minimum_text.value)
+            self.tb_constants_val.data['minimum_frequency'] = list([val])
+            print('Threshold', val)
+            ind = np.array(self.power_values) >= cutt_off
+            xx = np.array(self.xx)[ind]
+            yy = np.array(self.yy)[ind]
+            ff = np.array(self.freq_values)[ind]
+            pp = np.array(self.power_values)[ind]
+            mm = ['999']*(len(pp))
 
-
-
-        cutt_off = float(self.env.echelle_noise_cuttoff_text.value)
-        self.tb_constants_val.data['other_prd_cuttoff'] = list([cutt_off])
-        
-        val = float(self.env.frequency_minimum_text.value)
-        self.tb_constants_val.data['minimum_frequency'] = list([val])
-        print('Threshold', val)
-
-        # self.freq_values = self.env.tb_grid_source.data['freq_values']
-        # self.power_values = self.env.tb_grid_source.data['power_values']
-
-        ind = np.array(self.power_values) >= cutt_off
-        xx = np.array(self.xx)[ind]
-        yy = np.array(self.yy)[ind]
-        ff = np.array(self.freq_values)[ind]
-        pp = np.array(self.power_values)[ind]
-        # mm = list(np.ones(len(pp))*-1)
-        # mm = list(map(str,mm))
-        mm = ['999']*(len(pp))
-        #print(mm)
-        # old_data = ColumnDataSource(
-        #     data=dict(
-        #         # center_x=center_x.flatten(),
-        #         # center_y=center_y.flatten(),
-        #         xx=self.xx,
-        #         yy=self.yy,
-        #         freq_values=self.freq_values,
-        #         power_values=self.power_values,
-        #     )
-        # )
-
-        old_data = ColumnDataSource(
-            data=dict(
-                # center_x=center_x.flatten(),
-                # center_y=center_y.flatten(),
-                xx=list(xx),
-                yy=list(yy),
-                freq_values=list(ff),
-                power_values=list(pp),
-                Mode = mm,
+            old_data = ColumnDataSource(
+                data=dict(
+                    xx=list(xx),
+                    yy=list(yy),
+                    freq_values=list(ff),
+                    power_values=list(pp),
+                    Mode = mm,
+                )
             )
-        )
+            self.env.tb_grid_source.data = old_data.data
+            self.apply_modes(table=self.tb_se_first_source.to_df())
+            self.apply_modes(table=self.tb_se_second_source.to_df())
+            val=int(self.env.grid_circle_size.value)
+            print('Circle size',val)
+            self.env.fig_tpfint.select('grid_circle').glyph.size = val
+            if self.env.check_show_modes_grid.active[0]==0:
+                val='999'
+                df_grid=self.env.tb_grid_source.to_df().query('Mode !=@val')
+                old_data=ColumnDataSource(df_grid.to_dict('list'))
+                self.env.tb_grid_source.data = old_data.data
 
-        self.env.tb_grid_source.data = old_data.data
-        self.apply_modes(table=self.tb_se_first_source.to_df())
-        self.apply_modes(table=self.tb_se_second_source.to_df())
+
+
+        else:
+            old_data = ColumnDataSource(
+                data=dict(
+                    xx=[],
+                    yy=[],
+                    freq_values=[],
+                    power_values=[],
+                    Mode=[],
+                )
+            )
+            self.env.tb_grid_source.data = old_data.data
 
 
     def read_fits_get_fp(self):
@@ -688,33 +737,35 @@ class Interactive(Environment):
             dnu)
 
         self.make_tb_echelle_diagram()
-        ep = self.env.tb_echelle_diagram.data['image']*self.env.power_unit
+        if self.env.check_show_echelle.active[0]==0:
 
-        lo, hi = np.nanpercentile(ep.value, [0.1, 99.9])
-        vlo, vhi = 0.3 * lo, 1.7 * hi
-        vstep = (lo - hi)/500
-         
-        self.palette = getattr(bokeh.palettes, 
-                               self.env.select_color_palette.value)[9]
+            ep = self.env.tb_echelle_diagram.data['image']*self.env.power_unit
+            lo, hi = np.nanpercentile(ep.value, [0.1, 99.9])
+            vlo, vhi = 0.3 * lo, 1.7 * hi
+            vstep = (lo - hi)/500
+            self.palette = getattr(bokeh.palettes, 
+                                self.env.select_color_palette.value)[9]
+            if self.env.check_reverse_color_palette.active[0]!=1:
+                self.palette = list(reversed(self.palette))
+            color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
+            self.env.fig_tpfint.select(
+                'img').glyph.color_mapper.low = color_mapper.low
+            self.env.fig_tpfint.select(
+                'img').glyph.color_mapper.high = color_mapper.high
+            self.env.fig_tpfint.select(
+                'img').glyph.color_mapper.palette = getattr(color_mapper,'palette')
+            self.env.stretch_sliderint.start = vlo
+            self.env.stretch_sliderint.end = vhi
+            self.env.stretch_sliderint.value = (lo, hi)
+            self.env.dnu_slider.start = 0.01
+            self.env.dnu_slider.end = self.env.maxdnu
+        if self.env.check_show_horizontal_lines.active[0]==0:
+            self.env.fig_other_periodogram.select('vertical_line').visible = True
+            self.env.fig_other_periodogram.select('vertical_inverted_line').visible = True
+        else:
+            self.env.fig_other_periodogram.select('vertical_line').visible = False
+            self.env.fig_other_periodogram.select('vertical_inverted_line').visible = False
 
-        if self.env.check_reverse_color_palette.active[0]!=1:
-            self.palette = list(reversed(self.palette))
-            
-
-        color_mapper = LogColorMapper(palette=self.palette, low=lo, high=hi)
-        self.env.fig_tpfint.select(
-            'img').glyph.color_mapper.low = color_mapper.low
-        self.env.fig_tpfint.select(
-            'img').glyph.color_mapper.high = color_mapper.high
-        
-        self.env.fig_tpfint.select(
-            'img').glyph.color_mapper.palette = getattr(color_mapper,'palette')
-        
-        self.env.stretch_sliderint.start = vlo
-        self.env.stretch_sliderint.end = vhi
-        self.env.stretch_sliderint.value = (lo, hi)
-        self.env.dnu_slider.start = 0.01
-        self.env.dnu_slider.end = self.env.maxdnu
         self.make_grid()
 
     def _validate_numax(self, numax):
@@ -947,6 +998,7 @@ class Interactive(Environment):
                                         source= self.inverted_slider_source,
                                         length=300, 
                                         angle=np.pi/2,
+                                        name='vertical_inverted_line',
                                         line_dash='dotted',
                                         color={'field': 'Mode', 
                                         'transform': color_mapper})
@@ -1320,6 +1372,13 @@ class Interactive(Environment):
         old_data = ColumnDataSource(
             data=dict(Slicefreq=[], Frequency=[], Power=[],Mode=[], xx=[]))
         self.tb_se_first_source.data = old_data.data
+
+    def clear_se_table2(self):
+        '''This function clear table1 of the program'''
+
+        old_data = ColumnDataSource(
+            data=dict(Slicefreq=[], Frequency=[], Power=[],Mode=[], xx=[]))
+        self.tb_se_second_source.data = old_data.data
 
     def find_peak_frequencies(self):
         '''

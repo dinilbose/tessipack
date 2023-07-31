@@ -105,6 +105,12 @@ tab_int_1=column(row(env.fig_tpfint,
                     nxt_prv_button,
                     env.select_color_palette,
                     env.check_reverse_color_palette),
+                row(env.check_make_grid,
+                    env.check_show_modes_grid,
+                    env.check_show_echelle,
+                    env.grid_circle_size,
+                    env.check_show_horizontal_lines,
+                )
                 )
 # This is new tab for mode_selection
 
@@ -157,6 +163,7 @@ layout_catalog=column(row(column(layer_1,flag_lay1),
                                      env.move_se_2_1_button,
                                      env.save_table_2_button,
                                      env.load_table_2_button,
+                                     env.clear_se_table2_button,
                                  ), 
                                  env.table_se_second,
                                      ),
