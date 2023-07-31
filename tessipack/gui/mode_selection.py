@@ -55,10 +55,10 @@ class Interactive(Environment):
 
 
         self.mode_color_map = {
-                    '-1': "blue",
-                    '0': "green",
-                    '1': "yellow",
-                    '2': "orange",
+                    '999': "grey",
+                    '0': "red",
+                    '1': "green",
+                    '2': "blue",
                     }
 
         self.tb_constants_val = ColumnDataSource(
@@ -92,8 +92,8 @@ class Interactive(Environment):
         self.env.update_int_button.on_click(self.update_value)
         
         self.env.select_mode_menu = Select(title='Mode Select', 
-                                         options=['-1','0','1','2'], 
-                                         value='-1',width=150)
+                                         options=['999','0','1','2'], 
+                                         value='999',width=150)
         self.env.mode_apply_button = Button(
                                         label="Select Mode", 
                                         button_type="success", width=150)
@@ -134,11 +134,11 @@ class Interactive(Environment):
 
 
 
+        self.initialize_selection_tables()
 
         self.make_tb_echelle_diagram()
         self.interact_echelle()
         self.make_grid()
-        self.initialize_selection_tables()
 
         self.env.test_button = Button(
             label="Test", button_type="success", width=150)
@@ -159,13 +159,16 @@ class Interactive(Environment):
         self.env.tb_catalog_all.selected.on_change('indices',self.update_source)
 
         self.plot_vertical_lines()
+        self.inverted_slider()
+        self.old_frequency_min = self.env.minimum_frequency
+        self.old_frequency_max = self.env.maximum_frequency
 
 
 
 
     def update_source(self,attr,old,new):
         ff, pp = self.read_fits_get_fp()
-        mm = ['-1']*(len(pp))
+        mm = ['999']*(len(pp))
 
 
         f = (ff*u.Hz).to(self.env.frequency_unit)
@@ -195,7 +198,7 @@ class Interactive(Environment):
         Function initialise the the dnu periodogram table source and also the periodogram graph
         '''
         ff, pp = self.read_fits_get_fp()
-        mm = ['-1']*(len(pp))
+        mm = ['999']*(len(pp))
 
         f = (ff*u.Hz).to(self.env.frequency_unit)
         p = pp*self.env.power_unit
@@ -234,13 +237,13 @@ class Interactive(Environment):
                                      alpha=0.7, 
                                      color = {'field': 'Mode', 
                                                 'transform': color_mapper},
-                                     #**self.env.selection,
+                                     **self.env.selection,
                                      )
 
         fig_other_periodogram.line("frequency", "power",
                                    source=tb_other_periodogram,
-                                   alpha=0.7, color="#1F77B4")
-
+                                   alpha=0.7, color="grey")
+        #color="#1F77B4"
         fig_other_periodogram.ray(
             y="other_prd_cuttoff",
             x="minimum_frequency",
@@ -281,19 +284,12 @@ class Interactive(Environment):
             factors=list(color_map.keys()), 
             palette=list(color_map.values()))
 
-        # Reversed
-        self.env.fig_other_periodogram.ray(x="Frequency",
-                                           y=-300,
-                        source= self.tb_se_second_source,
-                        length=300, 
-                        angle=np.pi/2,
-                        color={'field': 'Mode', 
-                                                'transform': color_mapper})
 
         self.env.fig_other_periodogram.ray(x="Frequency",y=0,
                         source= self.tb_se_second_source,
                         length=2137, 
                         angle=np.pi/2,
+                        legend_field='Mode',
                         color={'field': 'Mode', 
                                                 'transform': color_mapper})
 
@@ -375,8 +371,8 @@ class Interactive(Environment):
         self.env.table_se_first = DataTable(
             source=self.tb_se_first_source,
             columns=columns,
-            width=300,
-            height=300,
+            width=500,
+            height=600,
             sortable=True,
             selectable=True,
             editable=True,
@@ -385,8 +381,8 @@ class Interactive(Environment):
         self.env.table_se_second = DataTable(
             source=self.tb_se_second_source,
             columns=columns,
-            width=300,
-            height=300,
+            width=500,
+            height=600,
             sortable=True,
             selectable="checkbox",
             editable=True,
@@ -466,15 +462,15 @@ class Interactive(Environment):
         #     """,
         #     ),
         # )
+        print('Commented')
+        # self.env.tb_grid_source.selected.on_change(
+        #     'indices', self.selection_grid_to_prd_fig)
 
-        self.env.tb_grid_source.selected.on_change(
-            'indices', self.selection_grid_to_prd_fig)
-
-        self.env.tb_other_periodogram.selected.on_change(
-            'indices', self.selection_prd_to_grid_fig)
+        # self.env.tb_other_periodogram.selected.on_change(
+        #     'indices', self.selection_prd_to_grid_fig)
         
-        self.env.tb_grid_source.selected.on_change(
-            'indices', self.selection_grid_to_table_fig)
+        # self.env.tb_grid_source.selected.on_change(
+        #     'indices', self.selection_grid_to_table_fig)
 
 
         # self.env.tb_grid_source.selected.on_change(
@@ -530,7 +526,8 @@ class Interactive(Environment):
                                         fill_alpha = 0.2, 
                                         line_color = {'field': 'Mode', 
                                                 'transform': color_mapper}, 
-                                        source=self.env.tb_grid_source)
+                                        source=self.env.tb_grid_source,
+                                        **self.env.selection)
 
 
 
@@ -573,7 +570,7 @@ class Interactive(Environment):
         pp = np.array(self.power_values)[ind]
         # mm = list(np.ones(len(pp))*-1)
         # mm = list(map(str,mm))
-        mm = ['-1']*(len(pp))
+        mm = ['999']*(len(pp))
         #print(mm)
         # old_data = ColumnDataSource(
         #     data=dict(
@@ -599,6 +596,9 @@ class Interactive(Environment):
         )
 
         self.env.tb_grid_source.data = old_data.data
+        self.apply_modes(table=self.tb_se_first_source.to_df())
+        self.apply_modes(table=self.tb_se_second_source.to_df())
+
 
     def read_fits_get_fp(self):
         '''
@@ -650,9 +650,37 @@ class Interactive(Environment):
         #self.env.fig_other_periodogram.x_range=(start, end)
         #print(self.env.fig_other_periodogram.x_range.end)
 
+    def check_change_in_frequency_limit(self):
+        """
+        Return true if there is change in frequency
+        """
+        #Get new frequency values
+    
+        self.env.minimum_frequency = float(
+            self.env.frequency_minimum_text.value)
+        self.env.maximum_frequency = float(
+            self.env.frequency_maximum_text.value)
+
+        if  (self.env.minimum_frequency == self.old_frequency_min) and (
+            self.env.maximum_frequency == self.old_frequency_max):
+            print('No change in Min and Max Freq Cuttoff')
+            value = False
+        else:
+            print('Change in Frequency')
+            value = True
+            
+        self.old_frequency_min = self.env.minimum_frequency
+        self.old_frequency_max = self.env.maximum_frequency
+
+        return value
+
+
+
     def update_plot(self, attr, old, new):
         
-        self.trim_frequency()
+        if self.check_change_in_frequency_limit():
+            print('Triming Frequency')
+            self.trim_frequency()
 
         self.id_mycatalog = self.env.tb_source.data['id_mycatalog'][0]
         dnu = self.dnu_val
@@ -895,6 +923,47 @@ class Interactive(Environment):
         y_f = y_f*self.env.frequency_unit
         return ep, x_f, y_f, y_original, xx, yy, freq_values, power_values
 
+    def inverted_slider(self):
+        
+        if self.env.inverted_slider ==None:
+            self.env.inverted_slider = Slider(start=-200,
+                                            end=200,
+                                            value=0,
+                                            step=1,
+                                            title="Inverted Slider",
+                                            width=1400)
+
+            color_map = self.mode_color_map
+            color_mapper = CategoricalColorMapper(
+                factors=list(color_map.keys()), 
+                palette=list(color_map.values()))
+
+
+            df_second=self.tb_se_second_source.to_df()
+            df_second=df_second[['Frequency','Power','Mode']]
+            self.inverted_slider_source = ColumnDataSource(df_second.to_dict('list'))
+            self.env.fig_other_periodogram.ray(x="Frequency",
+                                        y=-300,
+                                        source= self.inverted_slider_source,
+                                        length=300, 
+                                        angle=np.pi/2,
+                                        line_dash='dotted',
+                                        color={'field': 'Mode', 
+                                        'transform': color_mapper})
+            self.env.inverted_slider.on_change(
+                'value',self.update_inverted_slider)
+        # else:
+        #     self.update_inverted_slide(0,0,0)
+
+    def update_inverted_slider(self, attr,old, new):
+        df_second=self.tb_se_second_source.to_df()
+        df_second=df_second[['Frequency','Power','Mode']]
+        value = float(self.env.inverted_slider.value)
+        df_second['Frequency']=df_second['Frequency']+value
+        old_data = ColumnDataSource(df_second.to_dict('list'))
+        self.inverted_slider_source.data=old_data.data
+
+
     def _make_echelle_elements(self, deltanu, cmap='hot',
                                minimum_frequency=None, maximum_frequency=None, smooth_filter_width=None,
                                scale='linear', plot_width=490, plot_height=340, title='Echelle'):
@@ -1061,7 +1130,7 @@ class Interactive(Environment):
 
         create_interact_ui()
 
-    def apollinaire_echelle(self, freq, PSD, dnu, modes, twice=False, fig=None, index=111,
+    def apollinaire_echelle(self, freq, PSD, dnu, twice=False, fig=None, index=111,
                             figsize=(16, 16), title=None,
                             smooth=10, cmap='cividis', cmap_scale='linear',
                             mode_freq=None, mode_freq_err=None,
@@ -1257,7 +1326,6 @@ class Interactive(Environment):
         Find peak of the frequencies
         '''
 
-        self.clear_se_table1()
         df_se = pd.DataFrame()
         yy = self.env.tb_grid_source.data['yy']
         xx = self.env.tb_grid_source.data['xx']
@@ -1292,7 +1360,8 @@ class Interactive(Environment):
 
         self.env.tb_grid_source.selected.indices = df_se_freq['indices'].to_list(
         )
-        
+        self.clear_se_table1()
+        self.get_all_selection_button()
         #print('Selected indices', self.env.tb_grid_source.selected.indices)
 
         # Clear prd selections
@@ -1488,9 +1557,9 @@ class Interactive(Environment):
             self.env.freq_round)
         list_freq = df_first['Frequency'].to_list()
         
-        print('Drop down value is', self.env.select_mode_menu.value)
+        print('Drop down value is', self.env.select_mode_menu.value,list_freq)
         #ind = self.env.tb_grid_source.selected.indices 
-        
+
         df_grid = self.env.tb_grid_source.to_df()
         df_grid['freq_values'] = df_grid['freq_values'].round(
             self.env.freq_round)
@@ -1508,11 +1577,13 @@ class Interactive(Environment):
         ind = df_other.query('frequency == @list_freq').index
 
         df_other.loc[ind,'Mode'] = self.env.select_mode_menu.value
+        print('df_other',df_other.loc[ind])
         old_data = ColumnDataSource(df_other.to_dict('list'))
         self.env.tb_other_periodogram.data = old_data.data
-        
+        self.selection_table_to_prd_fig(0,0,0)
+        self.selection_prd_to_grid_fig(0,0,0)
         self.clear_se_table1()
-        self.get_all_selection_button()
+        self.selection_grid_to_table_fig(0,0,0)
 
 
     # def get_index_from_frequency(self,df=None,name='Frequency',val_list=''):
@@ -1559,7 +1630,7 @@ class Interactive(Environment):
         mode = self.env.select_mode_menu.value
         df_table2 = self.tb_se_second_source.to_df()
         df_table2_se = df_table2.query('Mode == @mode')
-        # print(df_table2_se)
+        print('mode_selected',df_table2_se)
         #df_table1_left = df_table1[~df_table1.index.isin(df_table1_se.index)]
         df_table2_left = df_table2.query('Mode != @mode')
         # print(df_table2_left.to_dict('list'))
@@ -1601,7 +1672,7 @@ class Interactive(Environment):
         val=list(modes)
         val= map(str, val)
 
-        val = list(map(lambda x: x.replace('-1', self.mode_color_map[-1]),val))
+        val = list(map(lambda x: x.replace('999', self.mode_color_map[-1]),val))
         val = list(map(lambda x: x.replace('0', self.mode_color_map[0]), val))
         val = list(map(lambda x: x.replace('1', self.mode_color_map[1]), val))
         val = list(map(lambda x: x.replace('2', self.mode_color_map[2]), val))
@@ -1610,7 +1681,7 @@ class Interactive(Environment):
     def trim_frequency(self):
 
         ff, pp = self.read_fits_get_fp()
-        #mm = ['-1']*(len(pp))
+        #mm = ['999']*(len(pp))
         
         min_freq = int(self.env.minimum_frequency)*self.env.frequency_unit
         max_freq = int(self.env.maximum_frequency)*self.env.frequency_unit
@@ -1631,7 +1702,7 @@ class Interactive(Environment):
         p = pp[ind]
         f = f*self.env.frequency_unit
         p = p*self.env.power_unit
-        mm = ['-1']*(len(p))
+        mm = ['999']*(len(p))
 
         #self.env.minimum_frequency = f.min().value
         #self.env.maximum_frequency = f.max().value
@@ -1668,8 +1739,7 @@ class Interactive(Environment):
         df = pd.read_csv(filename)
         df['Mode']=df['Mode'].astype(str)
         df['Frequency']=df['Frequency'].astype(float)
-        df['Frequency']=df['Frequency'].astype(float)
-        #print(df)    
+        print('Loaded values',df)    
         old_data = ColumnDataSource(df.to_dict('list'))
 
         self.tb_se_second_source.data = old_data.data
@@ -1685,14 +1755,16 @@ class Interactive(Environment):
         list_freq = df_second['Frequency'].to_list()
 
         for mode in df_second.Mode.unique():
-
+            print('Applying', mode,df_second.Mode.unique())
+            list_freq = df_second.query(
+                    'Mode==@mode')['Frequency'].to_list()
             
             df_grid = self.env.tb_grid_source.to_df()
             df_grid['freq_values'] = df_grid['freq_values'].round(
                 self.env.freq_round)
             ind = df_grid.query('freq_values == @list_freq').index
 
-            df_grid.loc[ind,'Mode'] = mode
+            df_grid.loc[ind,'Mode'] = str(mode)
             old_data = ColumnDataSource(df_grid.to_dict('list'))
             self.env.tb_grid_source.data = old_data.data
 
@@ -1703,9 +1775,38 @@ class Interactive(Environment):
                 self.env.freq_round)
             ind = df_other.query('frequency == @list_freq').index
 
-            df_other.loc[ind,'Mode'] = mode
+            df_other.loc[ind,'Mode'] = str(mode)
             old_data = ColumnDataSource(df_other.to_dict('list'))
             self.env.tb_other_periodogram.data = old_data.data
         
 
-    
+    def apply_modes(self,table):
+        df_second=table
+        df_second['Mode']=df_second['Mode'].astype(str)
+        df_second['Frequency']=df_second['Frequency'].round(
+        self.env.freq_round)
+        for mode in df_second.Mode.unique():
+            print('Applying', mode,df_second.Mode.unique())
+            list_freq = df_second.query(
+                    'Mode==@mode')['Frequency'].to_list()
+            
+            df_grid = self.env.tb_grid_source.to_df()
+            df_grid['freq_values'] = df_grid['freq_values'].round(
+                self.env.freq_round)
+            ind = df_grid.query('freq_values == @list_freq').index
+
+            df_grid.loc[ind,'Mode'] = str(mode)
+            old_data = ColumnDataSource(df_grid.to_dict('list'))
+            self.env.tb_grid_source.data = old_data.data
+
+            #ind = self.env.tb_other_periodogram.selected.indices
+
+            df_other = self.env.tb_other_periodogram.to_df()
+            df_other['frequency'] = df_other['frequency'].round(
+                self.env.freq_round)
+            ind = df_other.query('frequency == @list_freq').index
+
+            df_other.loc[ind,'Mode'] = str(mode)
+            old_data = ColumnDataSource(df_other.to_dict('list'))
+            self.env.tb_other_periodogram.data = old_data.data
+        

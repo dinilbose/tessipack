@@ -145,6 +145,7 @@ notes_lay1 = column(env.text_Notes_w)
 layout_catalog=column(row(column(layer_1,flag_lay1),
                           tab_interactive_layout,
                           column(env.fig_other_periodogram,
+                                 env.inverted_slider,
                                  row(env.table_se_first,
                                     column(env.test_button,
                                      env.find_peaks_button,

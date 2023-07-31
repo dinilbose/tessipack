@@ -77,11 +77,19 @@ class Environment(object):
     plot_width = 810
     plot_height = 300
     fiducial_frame = 0
-    selection = {'selection_color': "red", 'nonselection_fill_alpha': 0.7,
-                 'nonselection_fill_color': "#1F77B4",
-                 'nonselection_line_color': "#1F77B4",
-                 'nonselection_line_alpha': 0.7}
+    # selection = {'selection_color': "red", 'nonselection_fill_alpha': 0.7,
+    #              'nonselection_fill_color': "#1F77B4",
+    #              'nonselection_line_color': "#1F77B4",
+    #              'nonselection_line_alpha': 0.7}
 
+    selection = {'selection_color': "black", 
+                 'nonselection_fill_alpha': 0.7,
+                 'nonselection_fill_color': "grey",
+                 #'nonselection_line_color': "#1F77B4",
+                 #'nonselection_line_alpha': 0.7
+                 'selection_fill_alpha': 1
+                 }
+    selection = {}
     selection_osc = {'line_color': "green",
                      'nonselection_line_color': "#1F77B4", 'nonselection_line_alpha': 1}
 
@@ -280,7 +288,7 @@ class Environment(object):
     tb_other_source = None
     save_table_2_button = None
     load_table_2_button = None
-
+    inverted_slider = None
     select_color_palette = None
     check_reverse_color_palette = None
     default_color_palette = "Greys"
