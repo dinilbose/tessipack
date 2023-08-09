@@ -1,5 +1,5 @@
 __version__ = "0.0.21"
-print('Under development.....version ',__version__)
+print(' Moving to python3.9ß ',__version__)
 import os
 PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 print(PACKAGEDIR)
