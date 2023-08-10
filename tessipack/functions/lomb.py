@@ -25,7 +25,7 @@ try:
 except ImportError:
     from astropy.stats import LombScargle
     from astropy.stats.lombscargle import implementations
-
+from astropy.timeseries.periodograms.lombscargle import implementations
 
 
 

@@ -48,10 +48,15 @@ def create_mask(x=1,y=1,value=False):
         mask=mask!=0
     else:
         mask[mask==0]=value
+    print('Returning array')
+    return np.array(mask)
 
-    return mask
-
-def replace_mask(mask='',x=1,y=1,value=True):
+def replace_mask(mask='',x=1,y=1,value=True,numberlogic=True):
     '''Replace pixels values in a mask file'''
+    mask=np.array(mask)
     mask[int(y),int(x)]=value
-    return mask
+
+    if numberlogic==True:
+        mask = [[1 if value else 0 for value in row] for row in mask]
+
+    return np.array(mask)

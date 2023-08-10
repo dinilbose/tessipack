@@ -2,7 +2,8 @@ import sys
 from bokeh.layouts import row,column
 from bokeh.layouts import grid
 from bokeh.plotting import curdoc, figure,show
-from bokeh.models import Panel
+#from bokeh.models import Panel
+from bokeh.models.layouts import TabPanel, Tabs
 import pandas
 from bokeh.models import Button  # for saving data
 
@@ -10,7 +11,7 @@ from bokeh.models import Button  # for saving data
 #import env
 #import aperture
 #from importlib import reload
-from bokeh.models.widgets import Tabs
+#from bokeh.models.widgets import Tabs
 from bokeh.layouts import layout, Spacer
 
 
@@ -49,7 +50,7 @@ col5=row(column(env.text_banner_bp_rp,env.text_banner_Gmag,env.text_banner_dmin)
 col6=row(column(env.text_Notes_w))
 
 layout=column(col1,col2,col3,col4,col5,col6)
-tab0= Panel(child=layout, title = 'Aperture')
+tab0= TabPanel(child=layout, title = 'Aperture')
 layout2=column(env.fig_periodogram)
 
 nxt_prv_button=row(env.next_button,env.previous_button,sizing_mode='fixed')
@@ -62,7 +63,7 @@ main_row = row(env.fig_periodogram,env.fig_periodogram1,env.table_periodogram)
 series = row(env.fig_periodogram2, env.fig_periodogram3,widgets,sizing_mode='fixed')
 last_row = row(env.fig_periodogram4,env.fig_lightcurve)
 layout = column(main_row, series,last_row)
-tab1 = Panel(child=layout, title = 'Periodogram')
+tab1 = TabPanel(child=layout, title = 'Periodogram')
 
 # tab1= Panel(child=layout2, title = 'Periodogram')
 
@@ -82,7 +83,7 @@ notes_lay1=column(env.text_Notes_w)
 
 # layout_catalog=row(column(env.text_catalog_query,env.text_id_mycatalog_query,env.text_id_query),column(env.update_catalog_button,env.update_id_mycatalog_button,env.update_id_button),env.fig_hr)
 layout_catalog=column(row(layer_1,env.fig_hr,column(env.fig_lightcurve,env.fig_periodogram)),row(env.text_banner),flag_lay1,text_lay1,notes_lay1)
-tab_2 = Panel(child=layout_catalog, title = 'Catalog')
+tab_2 = TabPanel(child=layout_catalog, title = 'Catalog')
 
 
 

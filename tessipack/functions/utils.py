@@ -235,7 +235,12 @@ def flux_filter_type(data='',flux='', time='',func='median',deviation='mad',sigm
     if deviation=='std':
         std=data_frame[flux_name].std()
     if deviation=='mad':
-        std=data_frame[flux_name].mad()
+        #std=data_frame[flux_name].mad()
+        value_dat=data_frame[flux_name]
+        median_value=value_dat.median()
+        std = (value_dat - median_value).abs().sum() / len(value_dat)
+
+
     if deviation=='mean_abs':
         std=stats.median_absolute_deviation(data_frame[flux_name])
 
@@ -342,3 +347,19 @@ def remove_file_if_exist(filename,verbose=False):
         os.remove(filename)
         if verbose==True:
             print(filename,' Removed')
+
+
+def eleanor_flux_object_pandas(eln_object):
+
+    columns_type = ['time', 'raw_flux', 'pca_flux', 'corr_flux','flux_err','quality','psf_flux']
+    frame=pd.DataFrame()
+    for col in columns_type:
+        attrb=getattr(eln_object,col)
+        if not type(getattr(eln_object,col))==type(None):
+            #print(col)
+            frame[col]=list(attrb)
+        else:
+            frame[col]=np.nan
+    frame['bkg_type']=eln_object.bkg_type
+
+    return frame

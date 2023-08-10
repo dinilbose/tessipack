@@ -33,6 +33,8 @@ from bokeh.models import Button, Select,CheckboxGroup  # for saving data
 import astropy.coordinates as Coord
 import astropy
 import ast
+from tessipack.functions import eleanor_patch
+
 class Aperture(Environment):
     env=Environment
     def __init__(self):
@@ -200,8 +202,8 @@ class Aperture(Environment):
             ("(x,y)", "($x, $y)"),
         ]
         fig_lightcurve = figure(
-            plot_width=self.env.plot_width,
-            plot_height=self.env.plot_height,
+            width=self.env.plot_width,
+            height=self.env.plot_height,
             tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
             title="Light Curve",tooltips=TOOLTIPS,
         )
@@ -263,32 +265,23 @@ class Aperture(Environment):
         myaperture=[]
         for pix in pixels:
             # print(pix)
-            aperture_mask=aperture.replace_mask(mask=custom_aperture,x=pix[0],y=pix[1],value=True)
+            custom_aperture=aperture.replace_mask(mask=custom_aperture,x=pix[0],y=pix[1],value=True)
         npix =tpf_flux[0, :, :].size
-        pixel_index_array = np.arange(0, npix, 1).reshape(tpf_flux[0].shape)
-        tools='tap,box_select,wheel_zoom,reset'
-        big_flux_array=tpf_flux[0,:,:].reshape(-1)
-        star=None
-        column=1
-        row=1
-        npix = tpf_flux[0, :, :].size
-        pixel_index_array = np.arange(0, npix, 1).reshape(tpf_flux[0].shape)
-        xx = column + np.arange(tpf_flux.shape[1])
-        yy = row + np.arange(tpf_flux.shape[2])
-        xa, ya = np.meshgrid(xx, yy)
-        tb_tpf = ColumnDataSource(data=dict(xx=xa-0.5, yy=ya-0.5))
-        tb_tpf.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
-        tb_tpf_default=[]
-        xx = column + np.arange(tpf_flux.shape[1])
-        yy = row + np.arange(tpf_flux.shape[2])
-        xa, ya = np.meshgrid(xx, yy)
+        x=np.arange(0,tpf_flux.shape[1])
+        y=np.arange(0,tpf_flux.shape[1])
+        xx,yy=np.meshgrid(x,x)
+        xx_f=xx.flatten()+0.5
+        yy_f=yy.flatten()+0.5
+        tb_tpf = ColumnDataSource(data=dict(xx=xx_f, yy=yy_f))
+        selected_indices=np.where(custom_aperture.flatten()==1)[0].tolist()
+        tb_tpf.selected.indices = selected_indices
         return tb_tpf,tpf_flux
 
 
 
     def make_tpf_figure_elements(self,tb_tpf,tpf_flux, pedestal=None, fiducial_frame=None,
-                                 plot_width=370, plot_height=340, scale='log', vmin=None, vmax=None,
-                                 cmap='Viridis256', tools='tap,box_select,wheel_zoom,reset'):
+                                 width=370, height=340, scale='log', vmin=None, vmax=None,
+                                 cmap='Viridis256', tools='tap,lasso_select,box_select,wheel_zoom,reset'):
         if pedestal is None:
             self.pedestal = -np.nanmin(tpf_flux) + 1
         if scale == 'linear':
@@ -297,7 +290,7 @@ class Aperture(Environment):
         column=0
         row=0
         title = "Pixel data"
-        fig = figure(plot_width=600, plot_height=600,
+        fig = figure(width=600, height=600,
                      x_range=(column, column+tpf_flux.shape[2]),
                      y_range=(row, row+tpf_flux.shape[1]),
                      title=title, tools=tools,
@@ -348,8 +341,8 @@ class Aperture(Environment):
 
         if tb_tpf is not None:
             fig.rect('xx', 'yy', 1, 1, source=tb_tpf, fill_color='gray',
-                    fill_alpha=0.4, line_color='white',name='new')
-            # source = ColumnDataSource(data=dict(height=[6, 1, 7, 6, 8, 6],
+                    fill_alpha=0.4, line_color='blue',name='new')
+            # source = ColumnDataSource(dagta=dict(height=[6, 1, 7, 6, 8, 6],
             #                                     weight=[6, 1, 2, 4, 6, 7],
             #                                     names=['Mark', 'Amir', 'Matt', 'Greg',
             #                                            'Owen', 'Juan']))
@@ -418,7 +411,7 @@ class Aperture(Environment):
         myaperture=[]
         for pix in new_pixel:
             # print(pix)
-            custom_aperture=aperture.replace_mask(mask=custom_aperture,y=pix[0],x=pix[1],value=True)
+            custom_aperture=aperture.replace_mask(mask=custom_aperture,y=pix[0],x=pix[1],value=True,numberlogic=True)
         default_ape=['New_aperture',custom_aperture]
         myaperture=[default_ape]
 
@@ -434,40 +427,30 @@ class Aperture(Environment):
     #         if not eln_object==None:
     #             eln_object=eleanor.TargetData(star,do_psf=True,do_pca=True)
         print('Eleanor_version',eleanor.__file__)
-        eln_object = eleanor.TargetData(star,do_psf=True,do_pca=True,other_aperture=myaperture)
-        # print('Background########',eln_object.bkg_type)
-        flux=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='pca_flux',bkg_type=eln_object.bkg_type)
-        time=eln_object.time
-        flux_name='pca_flux'
+        #making changes to 
+        # eln_object = eleanor.TargetData(star,do_psf=False,do_pca=True,other_aperture=myaperture)
+        # flux=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='pca_flux',bkg_type=eln_object.bkg_type)
+        # time=eln_object.time
+        # flux_name='pca_flux'
+        # data_frame=pd.DataFrame()
+        # data_frame['time']=time
+        # data_frame['corr_flux']=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='corr_flux',bkg_type=eln_object.bkg_type)
+        # data_frame['pca_flux']=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='pca_flux',bkg_type=eln_object.bkg_type)
+        # data_frame['psf_flux']=np.nan
+        # data_frame['flux_err']=eln_object.flux_err
 
-
-        data_frame=pd.DataFrame()
-        data_frame['time']=time
-        data_frame['corr_flux']=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='corr_flux',bkg_type=eln_object.bkg_type)
-        data_frame['pca_flux']=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='pca_flux',bkg_type=eln_object.bkg_type)
-        #psf_flux not avaialble for New_aperture
-        data_frame['psf_flux']=np.nan
-        data_frame['flux_err']=eln_object.flux_err
-        # self.env.current_flux_dataframe=data_frame
-
-
-        # time_flag_frame=pd.read_csv(mycatalog.filename(name='eleanor_time_flag',id_mycatalog=id_mycatalog))
-        # time_flag=time_flag_frame.time_flag.values
+        eln_object = eleanor_patch.TargetData(star,do_pca=True)
+        eln_object.get_lightcurve(aperture=custom_aperture,bkg_type=eln_object.bkg_type)
+        eln_object.corrected_flux(flux=eln_object.raw_flux,pca=True)
+        data_frame=utils.eleanor_flux_object_pandas(eln_object)
+        #print(data_frame)
 
         time_flag_frame=pd.DataFrame()
         time_flag=eln_object.quality == 0
-        # data_frame['time_flag']=time
-
-        # all_value_n=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,time=time,flux=flux,flux_name='pca_flux',flux_err=eln_object.flux_err).reset_index()
-        # from importlib import reload
-        # reload(utils)
-        print('data_frame',data_frame)
-        # print('time_frame',time_flag_frame)
         print('data_frame',data_frame)
 
         all_value_n=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,data=data_frame,flux_name='pca_flux').reset_index()
 
-        # print('time',time_flag,len(time),len(all_value_n))
         time_n=list(all_value_n.time.values)
         flux_n=list(all_value_n.pca_flux.values)
         flux_err_n=list(all_value_n.flux_err.values)
@@ -480,33 +463,44 @@ class Aperture(Environment):
 
         tb_lightcurve_n = ColumnDataSource(data=dict(time=time_n, flux=flux_n,flux_err=flux_err_n))
         self.env.tpf_flux= eln_object.tpf
+        tpf_flux = eln_object.tpf
+        self.env.tb_lightcurve.data=dict(tb_lightcurve_n.data)
 
-        self.env.tb_lightcurve.data=tb_lightcurve_n.data
-
-        npix = self.env.tpf_flux[0, :, :].size
-        pixel_index_array = np.arange(0, npix, 1).reshape(self.env.tpf_flux[0].shape)
-        tools='tap,box_select,wheel_zoom,reset'
-        big_flux_array=self.env.tpf_flux[0,:,:].reshape(-1)
-        star=None
-        column=1
-        row=1
-        npix =self.env.tpf_flux[0, :, :].size
-        pixel_index_array = np.arange(0, npix, 1).reshape(self.env.tpf_flux[0].shape)
-        xx = column + np.arange(self.env.tpf_flux.shape[2])
-        yy = row + np.arange(self.env.tpf_flux.shape[1])
-        xa, ya = np.meshgrid(xx, yy)
-        tpf_source_n = ColumnDataSource(data=dict(xx=xa-0.5, yy=ya-0.5))
+        # npix = self.env.tpf_flux[0, :, :].size
+        # pixel_index_array = np.arange(0, npix, 1).reshape(self.env.tpf_flux[0].shape)
+        # tools='tap,box_select,wheel_zoom,reset'
+        # big_flux_array=self.env.tpf_flux[0,:,:].reshape(-1)
+        # star=None
+        # column=1
+        # row=1
+        # npix =self.env.tpf_flux[0, :, :].size
+        # pixel_index_array = np.arange(0, npix, 1).reshape(self.env.tpf_flux[0].shape)
+        # xx = column + np.arange(self.env.tpf_flux.shape[2])
+        # yy = row + np.arange(self.env.tpf_flux.shape[1])
+        # xa, ya = np.meshgrid(xx, yy)
+        # tpf_source_n = ColumnDataSource(data=dict(xx=xa-0.5, yy=ya-0.5))
         #Repalace aperture mask with custom aperture
-        aperture_mask=custom_aperture
-        tpf_source_n.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
-        xx = column + np.arange(self.env.tpf_flux.shape[2])
-        yy = row + np.arange(self.env.tpf_flux.shape[1])
-        xa, ya = np.meshgrid(xx, yy)
-        tpf_source_default_n = ColumnDataSource(data=dict(xxx=xa-0.5, yyy=ya-0.5))
-        tpf_source_default_n.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
-        self.env.tb_tpf.selected=tpf_source_default_n.selected
-        self.env.tb_tpf.data=tpf_source_default_n.data
-        print("Generating Light curve Finished")
+        # aperture_mask=custom_aperture
+        # tpf_source_n.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
+        # xx = column + np.arange(self.env.tpf_flux.shape[2])
+        # yy = row + np.arange(self.env.tpf_flux.shape[1])
+        # xa, ya = np.meshgrid(xx, yy)
+
+        # tpf_source_default_n = ColumnDataSource(data=dict(xxx=xa-0.5, yyy=ya-0.5))
+        # tpf_source_default_n.selected.indices = pixel_index_array[aperture_mask].reshape(-1).tolist()
+        
+        x=np.arange(0,tpf_flux.shape[1])
+        y=np.arange(0,tpf_flux.shape[1])
+        xx,yy=np.meshgrid(x,x)
+        xx_f=xx.flatten()+0.5
+        yy_f=yy.flatten()+0.5
+        tb_tpf = ColumnDataSource(data=dict(xx=xx_f, yy=yy_f))
+        selected_indices=np.where(custom_aperture.flatten()==1)[0].tolist()
+        tb_tpf.selected.indices = selected_indices
+
+        print('custom_aperture',custom_aperture)
+        self.env.tb_tpf.selected.indices=np.where(custom_aperture.flatten()==1)[0].tolist()
+        self.env.tb_tpf.data=dict(tb_tpf.data)
 
         return 0
 
@@ -602,9 +596,10 @@ class Aperture(Environment):
         tb_lightcurve,fig_lightcurve=self.initiate_lk(self.id_mycatalog)
         print('default###id_mycatalog_lightcurve',id_mycatalog)
         tb_tpf,tpf_flux=self.initiate_tpf(self.id_mycatalog)
-        self.env.tb_lightcurve.data=tb_lightcurve.data
-        self.env.tb_tpf.data=tb_tpf.data
-        self.env.tb_tpf.selected=tb_tpf.selected
+        self.env.tb_lightcurve.data=dict(tb_lightcurve.data)
+        self.env.tb_tpf.data=dict(tb_tpf.data)
+        print('Selected',tb_tpf.selected)
+        self.env.tb_tpf.selected.indices=tb_tpf.selected.indices
         self.env.tpf_flux=tpf_flux
         fig_tpf,fig_stretch=self.make_tpf_figure_elements(self.env.tb_tpf,self.env.tpf_flux,fiducial_frame=self.env.fiducial_frame)
 
@@ -788,7 +783,7 @@ class Aperture(Environment):
             x=data.x.to_list()
             y=data.y.to_list()
             extra=ColumnDataSource(data=dict(x=x,y=y))
-            self.env.tb_nearby.data=extra.data
+            self.env.tb_nearby.data=dict(extra.data)
             # self.env.tb_nearby=ColumnDataSource(data=dict(x=x,y=y))
             # self.env.fig_tpf.rect("x","y",1,1,source=self.env.tb_nearby,line_color='red',line_width=2,name='nearby',alpha=1,fill_color=None)
 
@@ -802,7 +797,7 @@ class Aperture(Environment):
             y=data.y.to_list()
             new=ColumnDataSource(data=dict(x=x,y=y))
             # print('test_data',new)
-            self.env.tb_nearby.data=new.data
+            self.env.tb_nearby.data=dict(new.data)
 
     def draw_nearby_button(self):
         self.show_spinner()
@@ -816,7 +811,7 @@ class Aperture(Environment):
             self.env.toggle_button.button_type='success'
         if self.env.plot_nearby==-1:
             new=ColumnDataSource(data=dict(x=[],y=[]))
-            self.env.tb_nearby.data=new.data
+            self.env.tb_nearby.data=dict(new.data)
             print('Plot Near by False')
             self.env.toggle_button.button_type='danger'
 
@@ -898,7 +893,7 @@ class Aperture(Environment):
                     data=data.query('pixel_x<14 & pixel_y<14 & pixel_x>=0 & pixel_y>=0')
                 #data['id_mycatalog_names'] = data['id_mycatalog_names'].str.replace('N77_' , '')
                 old = ColumnDataSource(data=data.to_dict('list'))
-                self.env.tb_nearby_star.data=old.data
+                self.env.tb_nearby_star.data=dict(old.data)
             # print(data)
 
     def initiate_userinput(self):
@@ -941,10 +936,10 @@ class Aperture(Environment):
             err_x, err_y=utils.bokeh_errorbar(x=x,y=y,yerr=err)
 
             tb=ColumnDataSource(data=dict(x=err_x, y=err_y))
-            self.env.tb_lightcurve_error.data=tb.data
+            self.env.tb_lightcurve_error.data=dict(tb.data)
 
         if self.env.show_error_bar.active[0]==1:
             tb=ColumnDataSource(data=dict(x=[], y=[]))
-            self.env.tb_lightcurve_error.data=tb.data
+            self.env.tb_lightcurve_error.data=dict(tb.data)
             #strange to find this here
             #self.env.tb_source.data["id_mycatalog"][0]='custom_star'

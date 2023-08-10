@@ -61,15 +61,15 @@ class Periodogram(Environment):
         alpha=0.7
         if x_range==None:
             fig_periodogram = figure(
-                plot_width=self.env.plot_width,
-                plot_height=self.env.plot_height,
+                width=self.env.plot_width,
+                height=self.env.plot_height,
                 tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
                 title="Periodogram",tooltips=self.env.TOOLTIPS,
             )
         else:
             fig_periodogram = figure(
-                plot_width=self.env.plot_width,
-                plot_height=self.env.plot_height,x_range=x_range,y_range=y_range,
+                width=self.env.plot_width,
+                height=self.env.plot_height,x_range=x_range,y_range=y_range,
                 tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
                 title="Periodogram",tooltips=self.env.TOOLTIPS,
             )
@@ -91,7 +91,7 @@ class Periodogram(Environment):
 
     def update(self,attr,old,new):
         tb_periodogram=self.initiate_periodogram()
-        self.env.tb_periodogram.data=tb_periodogram.data
+        self.env.tb_periodogram.data=dict(tb_periodogram.data)
         self.reset_axis()
         self.load_table()
 
@@ -168,23 +168,23 @@ class Periodogram(Environment):
 
     def initiate_savebutton(self):
         self.env.saveas_prd_tb_button = Button(label="Save As", button_type="success")
-        self.env.saveas_prd_tb_button.callback = CustomJS(args=dict(source=self.env.tb_periodogram_se_tb,name=self.env.tb_source), code="""
-                var data = source.data;
-                var filename=name.data['id_mycatalog'][0]
-                value1=data['x'];
-                value2=data['y'];
-                var out = "";
-                for (i = 0; i < value1.length; i++) {
-                    out += value1[i]+','+value2[i]+"\\n";
-                }
-                var file = new Blob([out], {type: 'texpip install pscriptt/plain'});
-                var elem = window.document.createElement('a');
-                elem.href = window.URL.createObjectURL(file);
-                elem.download = filename;
-                document.body.appendChild(elem);
-                elem.click();
-                document.body.removeChild(elem);
-                """)
+        # self.env.saveas_prd_tb_button.callback = CustomJS(args=dict(source=self.env.tb_periodogram_se_tb,name=self.env.tb_source), code="""
+        #         var data = source.data;
+        #         var filename=name.data['id_mycatalog'][0]
+        #         value1=data['x'];
+        #         value2=data['y'];
+        #         var out = "";
+        #         for (i = 0; i < value1.length; i++) {
+        #             out += value1[i]+','+value2[i]+"\\n";
+        #         }
+        #         var file = new Blob([out], {type: 'texpip install pscriptt/plain'});
+        #         var elem = window.document.createElement('a');
+        #         elem.href = window.URL.createObjectURL(file);
+        #         elem.download = filename;
+        #         document.body.appendChild(elem);
+        #         elem.click();
+        #         document.body.removeChild(elem);
+        #         """)
         self.env.save_prd_tb_button = Button(label="Save File", button_type="success")
         self.env.save_prd_tb_button.on_click(self.save_file)
 
@@ -194,7 +194,7 @@ class Periodogram(Environment):
         df2=pd_periodogram.loc[new]
         final=pd.concat([pd_periodogram_se_tb,df2]).drop_duplicates().dropna().reset_index(drop=True)
         tb_final=ColumnDataSource(data=dict(x=final.x, y=final.y))
-        self.env.tb_periodogram_se_tb.data=tb_final.data
+        self.env.tb_periodogram_se_tb.data=dict(tb_final.data)
 
     def save_file(self):
         source=self.env.tb_source.data['id_mycatalog'][0]
@@ -206,7 +206,7 @@ class Periodogram(Environment):
 
     def reset_table(self):
         tb_final=ColumnDataSource(data=dict(x=[], y=[]))
-        self.env.tb_periodogram_se_tb.data=tb_final.data
+        self.env.tb_periodogram_se_tb.data=dict(tb_final.data)
 
     def load_table(self):
         '''Load Selected Period file'''
@@ -219,7 +219,7 @@ class Periodogram(Environment):
         else:
             print('Intial selected Frequency does not exist for:',source)
             tb_final=ColumnDataSource(data=dict(x=[], y=[]))
-            self.env.tb_periodogram_se_tb.data=tb_final.data
+            self.env.tb_periodogram_se_tb.data=dict(tb_final.data)
 
     def initiate_table_buttons(self):
         self.env.reset_prd_tb_button = Button(label="Reset Table", button_type="success",width=120)

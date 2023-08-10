@@ -260,7 +260,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
 
             # for star in star_all:
                 # print('%%%%%%%%sector',star.sector)
-            data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+            data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
             mywcs=utils.extract_essential_wcs_postcard(data_post)
             radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
             for k in range(len(radec)):
@@ -276,7 +276,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
 
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
 
 
             data_frame=pd.DataFrame()
@@ -298,7 +298,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
                 print('Tpf Computing sector',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
 
             np.save(filename_tpf,data_post.tpf)
 
@@ -310,7 +310,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
                 print('header Computing',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
                 np.save(filename_tpf,data_post.tpf)
 
             data_post.header.totextfile(filename_header,overwrite=True)
@@ -322,7 +322,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
 
             data_frame=pd.DataFrame()
             q=data_post.quality == 0

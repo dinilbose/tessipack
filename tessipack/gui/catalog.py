@@ -51,7 +51,7 @@ class Catalog(Environment):
         self.env.update_id_button = Button(label="Update id", button_type="success",width=150)
         self.env.update_id_button.on_click(self.update_id)
 
-        self.env.selection_program = RadioGroup(labels=["Catalog", "Custom Star"],active=0,orientation='horizontal')
+        self.env.selection_program = RadioGroup(labels=["Catalog", "Custom Star"],active=0)
         self.env.selection_program.on_change('active',self.update_selection_program)
 
         self.env.text_custom_star_ra=TextInput(value='0', title="RA (deg)")
@@ -255,7 +255,7 @@ class Catalog(Environment):
         data['Gmag']=data.G+5*np.log10(dist/10)
         data_frame=data[['bp_rp','Gmag']]
         iso=ColumnDataSource(data=data_frame.to_dict('list'))
-        self.env.tb_isochrone.data=iso.data
+        self.env.tb_isochrone.data=dict(iso.data)
         self.env.isochrone_data=data
         print('Isochrone parameter Created')
         self.env.catalog_find_from_isocrhone()
@@ -405,7 +405,7 @@ class Catalog(Environment):
             self.env.sector=1
             self.env.custom_star_download_button.button_type='success'
             tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
-            self.env.tb_source.data=tb_source_new.data
+            self.env.tb_source.data=dict(tb_source_new.data)
             print('tb_source from update_selection_program',self.env.tb_source.data)
             self.env.tb_source.trigger("data",0,1)
 
@@ -457,7 +457,7 @@ class Catalog(Environment):
 
                     # for star in star_all:
                         # print('%%%%%%%%sector',star.sector)
-                data_post=eleanor.TargetData(star,do_psf=True,do_pca=True)
+                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
                 mywcs=utils.extract_essential_wcs_postcard(data_post)
                 radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
                 for k in range(len(radec)):
@@ -509,7 +509,7 @@ class Catalog(Environment):
             # self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
             tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
-            self.env.tb_source.data=tb_source_new.data
+            self.env.tb_source.data=dict(tb_source_new.data)
             print('Current tbsource',self.env.tb_source.data)
             self.env.tb_source.trigger("data",0,1)
 
@@ -529,5 +529,5 @@ class Catalog(Environment):
             # self.env.tb_source.data["id_mycatalog"]=['custom_star']
 
             tb_source_new = ColumnDataSource(data=dict(id_all=[0],id_mycatalog_all=['custom_star'],id=[0],id_mycatalog=['custom_star']))
-            self.env.tb_source.data=tb_source_new.data
+            self.env.tb_source.data=dict(tb_source_new.data)
             self.env.tb_source.trigger("data",0,1)
