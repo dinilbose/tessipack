@@ -21,18 +21,16 @@ import os, sys, copy
 import os.path
 import warnings
 import pickle
-
 from tqdm import tqdm
-
 from eleanor.ffi import use_pointing_model, load_pointing_model, centroid_quadratic
 from eleanor.postcard import Postcard, Postcard_tesscut
 from eleanor.models import Gaussian, Moffat
 from eleanor.utils import *
-
 from eleanor import TargetData 
-
-
-from eleanor import TargetData
+from eleanor import Source
+from tessipack import config
+from eleanor.source import *
+from eleanor.maxsector import maxsector
 
 class TargetData(TargetData):
     print('Running Patched Eleanor')
@@ -237,7 +235,91 @@ class TargetData(TargetData):
         self.aperture_size = np.nansum(self.aperture)
         self.best_ind = best_ind
 
-        return
+        return 0
+
+from eleanor.mast import *
+from tess_stars2px import tess_stars2px_function_entry as tess_stars2px
+
+
+def multi_sectors(sectors, tic=None, gaia=None,
+                  coords=None, name=None, tc=False, local=False,
+                  post_dir=config.post_dir, pm_dir=None,
+                  metadata_path=None, tesscut_size=31):
+    """Obtain a list of Source objects for a single target, for each of
+       multiple sectors for which the target was observed.
+
+    Parameters
+    ----------
+    sectors : list or str
+        The list of sectors for which data should be returned, or `'all'` to
+        return all sectors for which there are data.
+    tic : int, optional
+        The TIC ID of the source.
+    gaia : int, optional
+        The Gaia DR2 source_id.
+    coords : tuple, optional
+        The (RA, Dec) coords of the object in degrees.
+    tc : bool, optional
+        If True, use a TessCut cutout to produce postcards rather than
+        downloading the eleanor postcard data products.
+    tesscut_size : int, array-like, astropy.units.Quantity
+        The size of the cutout array, when tc is True. Details can be seen in
+        astroquery.mast.TesscutClass.download_cutouts
+    """
+
+    objs = []
+
+    if sectors == 'all':
+        if coords is None:
+            if tic is not None:
+                coords, _, _, _ = coords_from_tic(tic)
+            elif gaia is not None:
+                coords = coords_from_gaia(gaia)
+            elif name is not None:
+                coords = coords_from_name(name)
+
+        if coords is not None:
+            if type(coords) is SkyCoord:
+                coords = (coords.ra.degree, coords.dec.degree)
+            result = tess_stars2px(8675309, coords[0], coords[1])
+            sector = result[3][result[3] < maxsector + 0.5]
+            sectors = sector.tolist()
+
+        if len(sectors) == 0 or sectors[0] < 0:
+            raise SearchError("Your target is not observed by TESS, or maybe you need to run eleanor.Update()")
+        else:
+            print('Found star in Sector(s) ' +" ".join(str(x) for x in sectors))
+
+    if (type(sectors) == list) or (type(sectors) == np.ndarray):
+        for s in sectors:
+            star = Source(tic=tic, gaia=gaia, coords=coords, sector=int(s), tc=tc,
+                          local=local, post_dir=post_dir, pm_dir=pm_dir,
+                          metadata_path=metadata_path, tesscut_size=tesscut_size)
+            if star.sector is not None:
+                objs.append(star)
+        if len(objs) < len(sectors):
+            warnings.warn('Only {} targets found instead of desired {}. Your '
+                          'target may not have been observed yet in these sectors.'
+                          ''.format(len(objs), len(sectors)))
+        return objs
+
+
+
+
+
+
+
+class Source(Source):
+
+    Source.post_dir=config.post_dir
+
+
+
+
+
+
+
+
 
 
 

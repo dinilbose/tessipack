@@ -18,6 +18,7 @@ from tessipack.functions import aperture
 from pathlib import Path
 import os
 import ast
+from tessipack.functions import eleanor_patch
 
 class Catalog(Environment):
     env=Environment
@@ -416,7 +417,7 @@ class Catalog(Environment):
             dec=float(self.env.text_custom_star_dec.value)
 
             center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-            star_all = eleanor.multi_sectors(coords=center,sectors='all')
+            star_all = eleanor_patch.multi_sectors(coords=center,sectors='all')
             all_sectors=[star.sector for star in star_all]
             # update(id_mycatalog,Sector=str(all_sectors))
         # else:
@@ -453,11 +454,11 @@ class Catalog(Environment):
                 my_file = Path(filename_ap)
                 print(filename_ap)
                 center = SkyCoord(ra=ra, dec=dec, unit=(unit.deg, unit.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
+                star = eleanor_patch.Source(coords=center,sector=int(sector))
 
                     # for star in star_all:
                         # print('%%%%%%%%sector',star.sector)
-                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
+                data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
                 mywcs=utils.extract_essential_wcs_postcard(data_post)
                 radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
                 for k in range(len(radec)):

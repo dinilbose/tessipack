@@ -425,10 +425,10 @@ class Aperture(Environment):
         # if not star==None:
             # star=eleanor_lookup()
     #         if not eln_object==None:
-    #             eln_object=eleanor.TargetData(star,do_psf=True,do_pca=True)
-        print('Eleanor_version',eleanor.__file__)
+    #             eln_object=eleanor_patch.TargetData(star,do_psf=True,do_pca=True)
+        print('Patched','Eleanor')
         #making changes to 
-        # eln_object = eleanor.TargetData(star,do_psf=False,do_pca=True,other_aperture=myaperture)
+        # eln_object = eleano_patch.TargetData(star,do_psf=False,do_pca=True,other_aperture=myaperture)
         # flux=utils.extract_flux_ap(data=eln_object,name='New_aperture',flux_name='pca_flux',bkg_type=eln_object.bkg_type)
         # time=eln_object.time
         # flux_name='pca_flux'
@@ -584,8 +584,8 @@ class Aperture(Environment):
 
 
 
-        star = eleanor.Source(coords=center,sector=int(self.env.sector))
-        #star = eleanor.multi_sectors(coords=center,sectors='all')
+        star = eleanor_patch.Source(coords=center,sector=int(self.env.sector))
+        #star = eleanor_patch.multi_sectors(coords=center,sectors='all')
         #least_sector=np.array([i.sector for i in star]).argmin()
         #star = star[least_sector]
         print('Generated light curve Current Sector',star.sector)
@@ -673,18 +673,21 @@ class Aperture(Environment):
         Gmag=str(data['Gmag'].values[0])
         bp_rp=str(data['bp_rp'].values[0])
         PMemb=str(data['PMemb'].values[0])
-        id_apogee=str(data['id_apogee'].values[0])
+        #id_apogee=str(data['id_apogee'].values[0])
         name=str(data['id_mycatalog'].values[0])
         print(name)
 
         if apogee.empty:
-            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb+ ' id_apogee:'+id_apogee
+            #self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb+ ' id_apogee:'+id_apogee
+            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb
+            #+ ' id_apogee:'+id_apogee
 
         else:
-            apogee_teff=str(apogee['Teff'].values[0])
-            apogee_Fe_H=str(apogee['[Fe/H]'].values[0])
-            apogee_logg=str(apogee['logg'].values[0])
-            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb+ ' id_apogee:'+id_apogee+' apogee_teff:'+apogee_teff+' apogee_Fe_H:'+apogee_Fe_H+' apogee_logg:'+apogee_logg
+            # apogee_teff=str(apogee['Teff'].values[0])
+            # apogee_Fe_H=str(apogee['[Fe/H]'].values[0])
+            # apogee_logg=str(apogee['logg'].values[0])
+            self.env.Message='Soure: '+name+' Gmag:'+Gmag+' bp_rp:'+bp_rp+' PMemb:'+ PMemb
+            #+ ' id_apogee:'+id_apogee+' apogee_teff:'+apogee_teff+' apogee_Fe_H:'+apogee_Fe_H+' apogee_logg:'+apogee_logg
 
         self.env.v_flag_duplicate=data['flag_duplicate'].values[0]
         self.env.v_flag_source=data['flag_source'].values[0]

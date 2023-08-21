@@ -8,8 +8,12 @@ from .. import config
 from pathlib import Path
 import os
 import ast
-
 import os
+from tessipack.functions import eleanor_patch
+
+
+
+
 PACKAGEDIR = os.path.abspath(os.path.dirname(__file__))
 
 #package_path='/home/dinilbose/PycharmProjects/light_cluster/'
@@ -186,21 +190,19 @@ def filename(name='',id_gaia='',id_mycatalog='',cluster='Collinder_69',sector=''
 
 def update(id_mycatalog,**kwargs):
         '''Updates Catalog based on user inputs'''
-        mycatalog=pd.read_csv(package_path+'My_catalog/my_catalog_v'+catalog_version+'.csv')
+        mycatalog=pd.read_csv(config.catalog_path)
         mycatalog=mycatalog.set_index('id_mycatalog')
         #print('Catalog Version:',catalog_version,'Updated')
         for key in kwargs:
-            print('Version:',catalog_version,'  ',id_mycatalog,"Updated: %s: %s" % (key, kwargs[key]))
+            print('Catalog name:',config.catalog_name,'  ',id_mycatalog,"Updated: %s: %s" % (key, kwargs[key]))
             mycatalog.loc[id_mycatalog,key]=kwargs[key]
             # print(mycatalog.head)
-        mycatalog.to_csv(package_path+'/My_catalog/my_catalog_v'+catalog_version+
-'.csv')
+        mycatalog.to_csv(config.catalog_path)
 
 def download_data(id_mycatalog=None,ra=None,dec=None):
     "Download data"
     from astropy.coordinates import SkyCoord
     from astropy import units as u
-    import tessipack.eleanor as eleanor
     list_d=['bokeh_periodogram_table', 'eleanor_aperture', 'eleanor_aperture_current',
             'eleanor_flux', 'eleanor_flux_current', 'eleanor_header', 'eleanor_time_flag', 'eleanor_tpf', ]
 
@@ -260,7 +262,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
 
             # for star in star_all:
                 # print('%%%%%%%%sector',star.sector)
-            data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
+            data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
             mywcs=utils.extract_essential_wcs_postcard(data_post)
             radec=utils.pixe2radec(wcs=mywcs,aperture=data_post.aperture)
             for k in range(len(radec)):
@@ -275,18 +277,18 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
+                data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
-                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
-
-
-            data_frame=pd.DataFrame()
-            data_frame['time']=data_post.time
-            data_frame['corr_flux']=data_post.corr_flux
-            data_frame['pca_flux']=data_post.pca_flux
-            data_frame['psf_flux']=data_post.psf_flux
-            data_frame['flux_err']=data_post.flux_err
-            data_frame['time_flag']=data_post.quality
+            data_frame=utils.eleanor_flux_object_pandas(data_post)
             data_frame['sector']=star.sector
+
+            # data_frame=pd.DataFrame()
+            # data_frame['time']=data_post.time
+            # data_frame['corr_flux']=data_post.corr_flux
+            # data_frame['pca_flux']=data_post.pca_flux
+            # data_frame['psf_flux']=data_post.psf_flux
+            # data_frame['flux_err']=data_post.flux_err
+            # data_frame['time_flag']=data_post.quality
             data_frame.to_csv(filename_flux)
             data_frame.to_csv(filename_flux_current)
 
@@ -298,7 +300,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
                 print('Tpf Computing sector',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
+                data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
             np.save(filename_tpf,data_post.tpf)
 
@@ -310,7 +312,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
                 print('header Computing',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
+                data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
                 np.save(filename_tpf,data_post.tpf)
 
             data_post.header.totextfile(filename_header,overwrite=True)
@@ -322,7 +324,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
                 star = eleanor.Source(coords=center,sector=int(sector))
-                data_post=eleanor.TargetData(star,do_psf=False,do_pca=True)
+                data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
             data_frame=pd.DataFrame()
             q=data_post.quality == 0
@@ -340,15 +342,16 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture',sector=int(sector))
             aperture.add_aperture(id_mycatalog=id_mycatalog,ra=radec[k][0],dec=radec[k][1],name='eleanor_aperture_current',sector=int(sector))
 
-        data_frame=pd.DataFrame()
-        data_frame['time']=data_post.time
-        data_frame['corr_flux']=np.arange(0,len(data_frame))
-        data_frame['pca_flux']=np.arange(0,len(data_frame))
-        data_frame['psf_flux']=np.arange(0,len(data_frame))
-        data_frame['flux_err']=np.arange(0,len(data_frame))
-        data_frame['time_flag']=data_post.quality
+        # data_frame=pd.DataFrame()
+        # data_frame['time']=data_post.time
+        # data_frame['corr_flux']=np.arange(0,len(data_frame))
+        # data_frame['pca_flux']=np.arange(0,len(data_frame))
+        # data_frame['psf_flux']=np.arange(0,len(data_frame))
+        # data_frame['flux_err']=np.arange(0,len(data_frame))
+        # data_frame['time_flag']=data_post.quality
+        # data_frame['sector']=star.sector
+        data_frame=utils.eleanor_flux_object_pandas(data_post)
         data_frame['sector']=star.sector
-
 
         filename_flux=filename(id_mycatalog=id_mycatalog,name='eleanor_flux',sector=int(sector))
         data_frame.to_csv(filename_flux)

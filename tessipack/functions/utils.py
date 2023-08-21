@@ -361,5 +361,6 @@ def eleanor_flux_object_pandas(eln_object):
         else:
             frame[col]=np.nan
     frame['bkg_type']=eln_object.bkg_type
+    frame['sector']=eln_object.source_info.sector
 
     return frame

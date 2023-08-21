@@ -283,8 +283,8 @@ class Lcanalysis(Environment):
                 ("(x,y)", "($x, $y)"),
             ]
             fig_lc = figure(
-                plot_width=self.env.plot_width,
-                plot_height=self.env.plot_height,
+                width=self.env.plot_width,
+                height=self.env.plot_height,
                 tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
                 title="Light Curve",tooltips=TOOLTIPS,
             )
@@ -318,15 +318,15 @@ class Lcanalysis(Environment):
         alpha=0.7
         if x_range==None:
             fig_pr = figure(
-                plot_width=self.env.plot_width,
-                plot_height=self.env.plot_height,
+                width=self.env.plot_width,
+                height=self.env.plot_height,
                 tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
                 title="Periodogram",tooltips=self.env.TOOLTIPS,
             )
         else:
             fig_pr = figure(
-                plot_width=self.env.plot_width,
-                plot_height=self.env.plot_height,x_range=x_range,y_range=y_range,
+                width=self.env.plot_width,
+                height=self.env.plot_height,x_range=x_range,y_range=y_range,
                 tools=["box_zoom", "wheel_zoom","lasso_select", "tap" ,"reset", "save"],
                 title="Periodogram",tooltips=self.env.TOOLTIPS,
             )
