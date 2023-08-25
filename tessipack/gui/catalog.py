@@ -10,7 +10,7 @@ from tessipack.functions import equations
 import ast
 from astropy.coordinates import SkyCoord
 from astropy import units as unit
-from tessipack import eleanor
+#from tessipack import eleanor
 
 from tessipack.functions import utils
 from tessipack.functions import aperture
@@ -137,10 +137,10 @@ class Catalog(Environment):
         self.id_mycatalog=self.id_mycatalog_all[self.id]
         # self.env.tb_source = ColumnDataSource(data=dict(id_all=self.id_all,id_mycatalog_all=self.id_mycatalog_all,id=[self.id],id_mycatalog=[self.id_mycatalog]))
         old=ColumnDataSource(data=dict(id_all=self.id_all,id_mycatalog_all=self.id_mycatalog_all,id=[self.id],id_mycatalog=[self.id_mycatalog]))
-        self.env.tb_source.data = old.data
-        self.env.tb_catalog_all.data=ColumnDataSource(self.catalog_all.to_dict('list')).data
+        self.env.tb_source.data = dict(old.data)
+        self.env.tb_catalog_all.data=dict(ColumnDataSource(self.catalog_all.to_dict('list')).data)
         self.env.tb_catalog_all.selected.indices=[self.id]
-        self.env.tb_catalog_main.data=ColumnDataSource(self.env.catalog_main.to_dict('list')).data
+        self.env.tb_catalog_main.data=dict(ColumnDataSource(self.env.catalog_main.to_dict('list')).data)
 
         mydata=mycatalog.pointer(id_mycatalog=self.id_mycatalog)
         sector_list=ast.literal_eval(mydata.Sector.values[0])

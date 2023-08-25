@@ -6,4 +6,5 @@ print(PACKAGEDIR)
 from .functions.io import *
 #from .eleanor import eleanor
 from .My_catalog import mycatalog
-from .functions import eleanor_patch as eleanor 
+#from .functions import eleanor_patch as eleanor 
+from .functions.filters import Filters

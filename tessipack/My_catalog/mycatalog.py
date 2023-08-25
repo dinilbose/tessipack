@@ -234,7 +234,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
     if not type(sec)==str:
         if np.isnan(sec):
             center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-            star_all = eleanor.multi_sectors(coords=center,sectors='all')
+            star_all = eleanor_patch.multi_sectors(coords=center,sectors='all')
             all_sectors=[star.sector for star in star_all]
             update(id_mycatalog,Sector=str(all_sectors))
     else:
@@ -242,7 +242,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
 
     if sec=='[0]':
         center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-        star_all = eleanor.multi_sectors(coords=center,sectors='all')
+        star_all = eleanor_patch.multi_sectors(coords=center,sectors='all')
         all_sectors=[star.sector for star in star_all]
         update(id_mycatalog,Sector=str(all_sectors))
     else:
@@ -258,7 +258,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
         print(filename_ap)
         if not os.path.isfile(filename_ap):
             center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-            star = eleanor.Source(coords=center,sector=int(sector))
+            star = eleanor_patch.Source(coords=center,sector=int(sector))
 
             # for star in star_all:
                 # print('%%%%%%%%sector',star.sector)
@@ -276,7 +276,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
         if not os.path.isfile(filename_flux):
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
+                star = eleanor_patch.Source(coords=center,sector=int(sector))
                 data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
             data_frame=utils.eleanor_flux_object_pandas(data_post)
@@ -299,7 +299,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             if type(data_post)==str:
                 print('Tpf Computing sector',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
+                star = eleanor_patch.Source(coords=center,sector=int(sector))
                 data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
             np.save(filename_tpf,data_post.tpf)
@@ -311,7 +311,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
             if type(data_post)==str:
                 print('header Computing',id_mycatalog)
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
+                star = eleanor_patch.Source(coords=center,sector=int(sector))
                 data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
                 np.save(filename_tpf,data_post.tpf)
 
@@ -323,7 +323,7 @@ def download_data(id_mycatalog=None,ra=None,dec=None):
         if not os.path.isfile(filename_time) and not id_mycatalog=='custom_star':
             if type(data_post)==str:
                 center = SkyCoord(ra=ra, dec=dec, unit=(u.deg, u.deg))
-                star = eleanor.Source(coords=center,sector=int(sector))
+                star = eleanor_patch.Source(coords=center,sector=int(sector))
                 data_post=eleanor_patch.TargetData(star,do_psf=False,do_pca=True)
 
             data_frame=pd.DataFrame()

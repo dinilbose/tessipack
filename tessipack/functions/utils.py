@@ -3,6 +3,8 @@ from astropy.coordinates import SkyCoord
 import numpy as np
 import pandas as pd
 from scipy import stats
+from astropy.io.fits import Undefined
+from astropy.wcs import WCS
 
 from astropy.io.votable import parse
 
@@ -11,55 +13,7 @@ def votable_to_pandas(votable_file):
     table = votable.get_first_table().to_table(use_names_over_ids=True)
     return table.to_pandas()
 
-def extract_essential_wcs_postcard(tpf,header=False):
-    '''
-    Extract and correct the essential wcs solution and returns corrected wcs solution
 
-    Input: is eleanor postcard
-    Output: Corrected wcs solutions
-    '''
-    from astropy.io.fits import Undefined
-    from astropy.wcs import WCS
-    wcs_keywords = {'CTYPE1': 'CTYPE1',
-                    'CTYPE2': 'CTYPE2',
-#                      'CEN_RA': 'CRVAL1',
-#                      'CEN_DEC': 'CRVAL2',
-                    'CD1_1': 'PC1_1',
-                    'CD1_2': 'PC1_2',
-                    'CD2_1': 'PC2_1',
-                    'CD2_2': 'PC2_2',
-                    'TPF_H': 'NAXIS1',
-                    'TPF_W': 'NAXIS2'}
-    mywcs = {}
-    if header==False:
-        for oldkey, newkey in wcs_keywords.items():
-            if (tpf.header[oldkey] != Undefined):
-                mywcs[newkey] = tpf.header[oldkey]
-        mywcs['CUNIT1']='deg'
-        mywcs['CUNIT2']='deg'
-        mywcs['CDELT1']=1.0
-        mywcs['CDELT2']=1.0
-        mywcs['CTYPE1']='RA---TAN'
-        mywcs['CTYPE2']='DEC--TAN'
-        mywcs['CRVAL1']=tpf.header[('CEN_RA',1)]
-        mywcs['CRVAL2']=tpf.header[('CEN_DEC',1)]
-        mywcs['CRPIX1']=float(mywcs['NAXIS1']+1)/2
-        mywcs['CRPIX2']=float(mywcs['NAXIS2']+1)/2
-    if header==True:
-        for oldkey, newkey in wcs_keywords.items():
-            if (tpf[oldkey] != Undefined):
-                mywcs[newkey] = tpf[oldkey]
-        mywcs['CUNIT1']='deg'
-        mywcs['CUNIT2']='deg'
-        mywcs['CDELT1']=1.0
-        mywcs['CDELT2']=1.0
-        mywcs['CTYPE1']='RA---TAN'
-        mywcs['CTYPE2']='DEC--TAN'
-        mywcs['CRVAL1']=tpf[('CEN_RA',1)]
-        mywcs['CRVAL2']=tpf[('CEN_DEC',1)]
-        mywcs['CRPIX1']=float(mywcs['NAXIS1']+1)/2
-        mywcs['CRPIX2']=float(mywcs['NAXIS2']+1)/2
-    return WCS(mywcs)
 
 def radec2coord(ra=None,dec=None,unit='degree',frame='icrs'):
     '''Small funtions to convert ra and dec to astropy coord'''
@@ -192,6 +146,11 @@ def flux_filter2(data='',flux='',start_time=None,end_time=None,flux_name='flux',
     data_frame=data_frame.loc[flag]
 
     return data_frame
+
+
+
+
+    
 
 
 
@@ -364,3 +323,133 @@ def eleanor_flux_object_pandas(eln_object):
     frame['sector']=eln_object.source_info.sector
 
     return frame
+
+
+
+
+
+
+def old_extract_wcs(tpf,header=False):
+    '''
+    Old eleanor correction
+    '''
+    wcs_keywords = {'CTYPE1': 'CTYPE1',
+                    'CTYPE2': 'CTYPE2',
+#                      'CEN_RA': 'CRVAL1',
+#                      'CEN_DEC': 'CRVAL2',
+                    'CD1_1': 'PC1_1',
+                    'CD1_2': 'PC1_2',
+                    'CD2_1': 'PC2_1',
+                    'CD2_2': 'PC2_2',
+                    'TPF_H': 'NAXIS1',
+                    'TPF_W': 'NAXIS2'}
+    mywcs = {}
+    if header==False:
+        for oldkey, newkey in wcs_keywords.items():
+            if (tpf.header[oldkey] != Undefined):
+                mywcs[newkey] = tpf.header[oldkey]
+        mywcs['CUNIT1']='deg'
+        mywcs['CUNIT2']='deg'
+        mywcs['CDELT1']=1.0
+        mywcs['CDELT2']=1.0
+        mywcs['CTYPE1']='RA---TAN'
+        mywcs['CTYPE2']='DEC--TAN'
+        mywcs['CRVAL1']=tpf.header[('CEN_RA',1)]
+        mywcs['CRVAL2']=tpf.header[('CEN_DEC',1)]
+        mywcs['CRPIX1']=float(mywcs['NAXIS1']+1)/2
+        mywcs['CRPIX2']=float(mywcs['NAXIS2']+1)/2
+    if header==True:
+        for oldkey, newkey in wcs_keywords.items():
+            if (tpf[oldkey] != Undefined):
+                mywcs[newkey] = tpf[oldkey]
+        mywcs['CUNIT1']='deg'
+        mywcs['CUNIT2']='deg'
+        mywcs['CDELT1']=1.0
+        mywcs['CDELT2']=1.0
+        mywcs['CTYPE1']='RA---TAN'
+        mywcs['CTYPE2']='DEC--TAN'
+        mywcs['CRVAL1']=tpf[('CEN_RA',1)]
+        mywcs['CRVAL2']=tpf[('CEN_DEC',1)]
+        mywcs['CRPIX1']=float(mywcs['NAXIS1']+1)/2
+        mywcs['CRPIX2']=float(mywcs['NAXIS2']+1)/2
+    print(mywcs)
+    return WCS(mywcs)
+
+
+
+
+def new_extract_wcs(tpf,header=False):
+    '''
+    New TESSCUT correction
+    '''
+    mywcs={}
+    if header==True:
+        wcs_header=tpf
+    else:
+        wcs_header=tpf.header
+        
+        # mywcs['CUNIT1']='deg'
+        # mywcs['CUNIT2']='deg'
+        # mywcs['CDELT1']=1
+        # mywcs['CDELT2']=1
+        # mywcs['CTYPE1']='RA---TAN'
+        # mywcs['CTYPE2']='DEC--TAN'
+        # mywcs['CRVAL1']=wcs_header['CEN_RA']
+        # mywcs['CRVAL2']=wcs_header['CEN_DEC']
+        # mywcs['CRPIX1']=wcs_header['TPF_W']/2
+        # mywcs['CRPIX2']=wcs_header['TPF_H']/2
+        
+    def get_value(header=None,key='NAXIS',suffix='',prefix='1'):
+        key_full = prefix+key+suffix
+        value = header[key_full]
+        return value
+    
+    head = wcs_header
+    mywcs = {
+        'XTENSION': 'IMAGE   ',                                
+        'NAXIS': 2,                     
+        'NAXIS1': get_value(header=head,key='NAXIS',suffix='1',prefix=''),
+        'NAXIS2': get_value(header=head,key='NAXIS',suffix='2',prefix=''),
+        'WCSAXES': 2,
+        'CRPIX1': (get_value(header=head,key='TPF_W',suffix='',prefix=''))/2,
+        'CRPIX2':(get_value(header=head,key='TPF_H',suffix='',prefix=''))/2,
+        'PC1_1': get_value(header=head,key='PC',suffix='8',prefix='11'),
+        'PC1_2': get_value(header=head,key='PC',suffix='8',prefix='12'),
+        'PC2_1': get_value(header=head,key='PC',suffix='8',prefix='21'),
+        'PC2_2': get_value(header=head,key='PC',suffix='8',prefix='22'),
+        'CDELT1': get_value(header=head,key='CDLT',suffix='8',prefix='1'),
+        'CDELT2': get_value(header=head,key='CDLT',suffix='8',prefix='2'),
+        'CUNIT1': get_value(header=head,key='CUNI',suffix='8',prefix='1'),
+        'CUNIT2': get_value(header=head,key='CUNI',suffix='8',prefix='2'),
+        'CTYPE1': get_value(header=head,key='CTYP',suffix='8',prefix='1'),
+        'CTYPE2': get_value(header=head,key='CTYP',suffix='8',prefix='2'),
+        'CRVAL1': get_value(header=head,key='CEN_RA',suffix='',prefix=''),
+        'CRVAL2': get_value(header=head,key='CEN_DEC',suffix='',prefix='')
+    }
+    print(mywcs)
+    return WCS(mywcs)
+
+
+def extract_essential_wcs_postcard(tpf,header=False):
+    """
+    
+    Extract and correct the essential wcs solution and returns corrected wcs solution
+
+    Input: is eleanor postcard
+    Output: Corrected wcs solutions
+    """
+    if header==True:
+        wcs_header=tpf
+    else:
+        wcs_header=tpf.header
+    
+    all_key=[key for key,value in wcs_header.items()]
+    
+    
+    if 'CTYPE1' in all_key:
+        return old_extract_wcs(wcs_header,header=True)
+    
+    else:
+        # print('Doing new header')
+        return new_extract_wcs(wcs_header,header=True)
+    

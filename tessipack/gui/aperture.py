@@ -1,6 +1,6 @@
 import sys
 import os
-from tessipack import eleanor
+#from tessipack import eleanor
 from env import Environment
 import pandas as pd
 from bokeh.models import ColumnDataSource
@@ -179,23 +179,24 @@ class Aperture(Environment):
         details=mycatalog.pointer(catalog='mycatalog',id_mycatalog=id_mycatalog)
         clus=details.cluster.values[0]
 
-        Data=flags.apply_flag(filename=self.env.extra_flag_file,data=Data,cluster=clus,apply_cluster=True)
+        # Data=flags.apply_flag(filename=self.env.extra_flag_file,data=Data,cluster=clus,apply_cluster=True)
 
-        #print('Newwww Frameeeee',len(Data))
+        # #print('Newwww Frameeeee',len(Data))
 
-        flux_name='pca_flux'
-        time=Data.time
-        flux=Data[flux_name]
-        flux_err=Data['flux_err']
+        # flux_name='pca_flux'
+        # time=Data.time
+        # flux=Data[flux_name]
+        # flux_err=Data['flux_err']
 
-        time_flag=Data['time_flag']==0
+        # time_flag=Data['time_flag']==0
 
         #old version with time_flag as separate file
         #time_flag_frame=pd.read_csv(mycatalog.filename(name='eleanor_time_flag',id_mycatalog=id_mycatalog,sector=self.env.sector))
         #time_flag=time_flag_frame.time_flag.values
 
-        data_new=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,time=time,flux=flux,flux_name='pca_flux',flux_err=flux_err).reset_index()
+        # data_new=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,time=time,flux=flux,flux_name='pca_flux',flux_err=flux_err).reset_index()
         # print(data_new)
+        data_new=Data
         tb_lightcurve = ColumnDataSource(data=dict(time=list(data_new.time.values), flux=list(data_new.pca_flux.values),flux_err=list(data_new.flux_err.values)))
         TOOLTIPS = [
             ("index", "$index"),
@@ -445,18 +446,18 @@ class Aperture(Environment):
         data_frame=utils.eleanor_flux_object_pandas(eln_object)
         #print(data_frame)
 
-        time_flag_frame=pd.DataFrame()
-        time_flag=eln_object.quality == 0
-        print('data_frame',data_frame)
+        #time_flag_frame=pd.DataFrame()
+        #time_flag=eln_object.quality == 0
+        #print('data_frame',data_frame)
 
-        all_value_n=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,data=data_frame,flux_name='pca_flux').reset_index()
+        #all_value_n=utils.flux_filter_type(time_flag=time_flag,func='median',deviation='mad',sigma=self.env.sigma,data=data_frame,flux_name='pca_flux').reset_index()
 
-        time_n=list(all_value_n.time.values)
-        flux_n=list(all_value_n.pca_flux.values)
-        flux_err_n=list(all_value_n.flux_err.values)
+        #time_n=list(all_value_n.time.values)
+        #flux_n=list(all_value_n.pca_flux.values)
+        #flux_err_n=list(all_value_n.flux_err.values)
 
 
-        data_frame=data_frame.query('time==@time_n')
+        #data_frame=data_frame.query('time==@time_n')
         details=mycatalog.pointer(catalog='mycatalog',id_mycatalog=id_mycatalog)
         clus=details.cluster.values[0]
         self.env.current_flux_dataframe=flags.apply_flag(filename=self.env.extra_flag_file,data=all_value_n,cluster=clus,apply_cluster=True)
